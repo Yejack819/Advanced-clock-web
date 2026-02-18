@@ -80,18 +80,18 @@ export default function ClockDisplay() {
       {/* Time display */}
       <div className="flex items-center" style={{ height: `${digitHeight * (lineHeight / 100)}px`, lineHeight: `${lineHeight}%` }}>
         {/* Hours */}
-        <DigitRoller digit={time.hours[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} />
-        <DigitRoller digit={time.hours[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} />
+        <DigitRoller digit={time.hours[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} />
+        <DigitRoller digit={time.hours[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} />
 
         {/* Colon 1 */}
-        <ColonDots fontSize={fontSize} color={fontColor} height={digitHeight} />
+        <ColonDots fontSize={fontSize} color={fontColor} height={digitHeight * (lineHeight / 100)} />
 
         {/* Minutes */}
-        <DigitRoller digit={time.minutes[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} />
-        <DigitRoller digit={time.minutes[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} />
+        <DigitRoller digit={time.minutes[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} />
+        <DigitRoller digit={time.minutes[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} />
 
         {/* Colon 2 */}
-        <ColonDots fontSize={fontSize} color={fontColor} height={digitHeight} />
+        <ColonDots fontSize={fontSize} color={fontColor} height={digitHeight * (lineHeight / 100)} />
 
         {/* Seconds */}
         <DigitRoller
@@ -101,6 +101,7 @@ export default function ClockDisplay() {
           color={fontColor}
           animate={!hideSeconds}
           letterSpacing={letterSpacing}
+          lineHeight={lineHeight}
         />
         <DigitRoller
           digit={time.seconds[1]}
@@ -109,6 +110,7 @@ export default function ClockDisplay() {
           color={fontColor}
           animate={!hideSeconds}
           letterSpacing={letterSpacing}
+          lineHeight={lineHeight}
         />
       </div>
     </div>

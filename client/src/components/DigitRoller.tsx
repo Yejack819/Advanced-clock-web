@@ -17,14 +17,15 @@ interface DigitRollerProps {
   color: string;
   animate?: boolean;
   letterSpacing?: number; // 左右间距，像素值
+  lineHeight?: number; // 整体高度百分比
 }
 
 // Extended strip: 0,1,2,3,4,5,6,7,8,9,0 (extra 0 at end for 9->0 wrap)
 const DIGITS_EXTENDED = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
-export default function DigitRoller({ digit, fontSize, fontFamily, color, animate = true, letterSpacing = 0 }: DigitRollerProps) {
+export default function DigitRoller({ digit, fontSize, fontFamily, color, animate = true, letterSpacing = 0, lineHeight = 100 }: DigitRollerProps) {
   const targetIndex = parseInt(digit, 10) || 0;
-  const cellHeight = fontSize * 1.15;
+  const cellHeight = fontSize * 1.15 * (lineHeight / 100);
 
   const [displayIndex, setDisplayIndex] = useState(targetIndex);
   const [useTransition, setUseTransition] = useState(false);
