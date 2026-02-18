@@ -22,13 +22,16 @@ import {
   ChevronDown,
   Crosshair,
   Clock,
-  ArrowUpDown,
   Maximize2,
+  Download,
+  Upload,
+  Palette as PaletteIcon,
 } from 'lucide-react';
 
 export default function ControlBar() {
-  const { settings, updateSettings, isFullscreen, toggleFullscreen, setShowCalibration, showCalibration } = useClock();
+  const { settings, updateSettings, isFullscreen, toggleFullscreen, setShowCalibration, showCalibration, exportConfig, importConfig, applyTheme } = useClock();
   const [expanded, setExpanded] = useState(true);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
     <div className="control-bar fixed bottom-0 left-0 right-0 z-50">
@@ -91,28 +94,6 @@ export default function ControlBar() {
                 />
                 <span className="text-xs text-white/40 w-14 text-right font-mono tabular-nums">
                   {settings.fontSize}px
-                </span>
-              </div>
-            </ControlGroup>
-
-            {/* Line Height (整体高度) */}
-            <ControlGroup icon={<ArrowUpDown size={14} />} label="整体高度">
-              <div className="flex items-center gap-3">
-                <input
-                  type="range"
-                  min="50"
-                  max="150"
-                  step="5"
-                  value={settings.lineHeight}
-                  onChange={e => updateSettings({ lineHeight: Number(e.target.value) })}
-                  className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer"
-                  style={{
-                    accentColor: '#3b82f6',
-                    background: 'rgba(255,255,255,0.08)',
-                  }}
-                />
-                <span className="text-xs text-white/40 w-14 text-right font-mono tabular-nums">
-                  {settings.lineHeight}%
                 </span>
               </div>
             </ControlGroup>
@@ -226,6 +207,59 @@ export default function ControlBar() {
                   label="时间校准"
                   onClick={() => setShowCalibration(!showCalibration)}
                   active={showCalibration}
+                />
+              </div>
+            </ControlGroup>
+
+            {/* Themes */}
+            <ControlGroup icon={<PaletteIcon size={14} />} label="主题预设">
+              <div className="flex flex-col gap-2">
+                <ActionButton
+                  icon={<span>🤖</span>}
+                  label="赛博朋克"
+                  onClick={() => applyTheme('cyberpunk')}
+                />
+                <ActionButton
+                  icon={<span>⚪</span>}
+                  label="极简白"
+                  onClick={() => applyTheme('minimal')}
+                />
+                <ActionButton
+                  icon={<span>💚</span>}
+                  label="复古绿屏"
+                  onClick={() => applyTheme('retro')}
+                />
+              </div>
+            </ControlGroup>
+
+            {/* Config Management */}
+            <ControlGroup icon={<Download size={14} />} label="配置">
+              <div className="flex flex-col gap-2">
+                <ActionButton
+                  icon={<Download size={14} />}
+                  label="导出配置"
+                  onClick={exportConfig}
+                />
+                <ActionButton
+                  icon={<Upload size={14} />}
+                  label="导入配置"
+                  onClick={() => fileInputRef.current?.click()}
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  style={{ display: 'none' }}
+                  onChange={async (e) => {
+                    const file = e.currentTarget.files?.[0];
+                    if (file) {
+                      try {
+                        await importConfig(file);
+                      } catch (err) {
+                        console.error('Import failed:', err);
+                      }
+                    }
+                  }}
                 />
               </div>
             </ControlGroup>

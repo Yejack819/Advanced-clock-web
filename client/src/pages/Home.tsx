@@ -5,14 +5,46 @@
  * - 全屏居中显示时钟
  * - 底部控制面板
  * - 全屏模式下隐藏所有非时钟元素
+ * - 快捷键支持: F(全屏) C(校准) S(隐藏秒)
  */
+import React from 'react';
 import { ClockProvider, useClock } from '@/contexts/ClockContext';
 import ClockDisplay from '@/components/ClockDisplay';
 import ControlBar from '@/components/ControlBar';
 import CalibrationPanel from '@/components/CalibrationPanel';
 
 function ClockPage() {
-  const { settings, isFullscreen, showCalibration } = useClock();
+  const { settings, isFullscreen, showCalibration, toggleFullscreen, setShowCalibration, updateSettings } = useClock();
+
+  // Keyboard shortcuts
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // F key: toggle fullscreen
+      if (e.key.toLowerCase() === 'f' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        toggleFullscreen();
+      }
+      // C key: toggle calibration
+      else if (e.key.toLowerCase() === 'c' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        if (!isFullscreen) {
+          setShowCalibration(!showCalibration);
+        }
+      }
+      // S key: toggle hide seconds
+      else if (e.key.toLowerCase() === 's' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        updateSettings({ hideSeconds: !settings.hideSeconds });
+      }
+      // Escape: exit fullscreen
+      else if (e.key === 'Escape' && isFullscreen) {
+        toggleFullscreen();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen, showCalibration, settings.hideSeconds, toggleFullscreen, setShowCalibration, updateSettings]);
 
   return (
     <div
@@ -42,13 +74,23 @@ function ClockPage() {
       {/* Calibration panel */}
       {showCalibration && !isFullscreen && <CalibrationPanel />}
 
-      {/* Fullscreen hint */}
+      {/* Fullscreen hint with keyboard shortcuts */}
       {isFullscreen && (
         <div
           className="fixed bottom-4 left-1/2 -translate-x-1/2 text-white/20 text-xs transition-opacity duration-1000 opacity-0 hover:opacity-100"
           style={{ fontFamily: 'system-ui' }}
         >
-          按 ESC 退出全屏
+          按 ESC 退出全屏 | F 全屏 | C 校准 | S 隐藏秒
+        </div>
+      )}
+
+      {/* Keyboard shortcuts hint (not fullscreen) */}
+      {!isFullscreen && (
+        <div
+          className="fixed top-4 right-4 text-white/10 text-xs transition-opacity duration-300 hover:text-white/30"
+          style={{ fontFamily: 'system-ui' }}
+        >
+          快捷键: F(全屏) C(校准) S(隐藏秒)
         </div>
       )}
     </div>

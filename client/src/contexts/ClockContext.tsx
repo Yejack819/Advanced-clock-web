@@ -50,6 +50,9 @@ interface ClockContextType {
   toggleFullscreen: () => void;
   showCalibration: boolean;
   setShowCalibration: (v: boolean) => void;
+  exportConfig: () => void;
+  importConfig: (file: File) => Promise<void>;
+  applyTheme: (theme: 'cyberpunk' | 'minimal' | 'retro') => void;
 }
 
 const ClockContext = createContext<ClockContextType | null>(null);
@@ -110,6 +113,49 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('fullscreenchange', handler);
   }, []);
 
+  const exportConfig = useCallback(() => {
+    const dataStr = JSON.stringify(settings, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `clock-config-${new Date().toISOString().split('T')[0]}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [settings]);
+
+  const importConfig = useCallback(async (file: File) => {
+    try {
+      const text = await file.text();
+      const imported = JSON.parse(text) as Partial<ClockSettings>;
+      updateSettings(imported);
+    } catch (e) {
+      console.error('Failed to import config:', e);
+      throw new Error('Invalid configuration file');
+    }
+  }, [updateSettings]);
+
+  const applyTheme = useCallback((theme: 'cyberpunk' | 'minimal' | 'retro') => {
+    const themes = {
+      cyberpunk: {
+        fontColor: '#00ff00',
+        bgColor: '#0a0a0a',
+        fontFamily: "'Orbitron', sans-serif",
+      },
+      minimal: {
+        fontColor: '#1a1a1a',
+        bgColor: '#ffffff',
+        fontFamily: "'Playfair Display', serif",
+      },
+      retro: {
+        fontColor: '#00aa00',
+        bgColor: '#001100',
+        fontFamily: "'Courier Prime', monospace",
+      },
+    };
+    updateSettings(themes[theme]);
+  }, [updateSettings]);
+
   return (
     <ClockContext.Provider value={{
       settings,
@@ -118,6 +164,9 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       toggleFullscreen,
       showCalibration,
       setShowCalibration,
+      exportConfig,
+      importConfig,
+      applyTheme,
     }}>
       {children}
     </ClockContext.Provider>
@@ -129,3 +178,9 @@ export function useClock() {
   if (!ctx) throw new Error('useClock must be used within ClockProvider');
   return ctx;
 }
+
+export const THEME_PRESETS = {
+  cyberpunk: { name: '赛博朋克', fontColor: '#00ff00', bgColor: '#0a0a0a' },
+  minimal: { name: '极简白', fontColor: '#1a1a1a', bgColor: '#ffffff' },
+  retro: { name: '复古绿屏', fontColor: '#00aa00', bgColor: '#001100' },
+} as const;
