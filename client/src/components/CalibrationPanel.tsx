@@ -7,6 +7,7 @@
  * - 显示校准前标准时间和校准后时间
  * - 校准值保存至本地
  * - 点击面板外部或关闭按钮关闭
+ * - 所有按钮都有点击动画反馈
  */
 import { useState, useEffect, useRef } from 'react';
 import { useClock } from '@/contexts/ClockContext';
@@ -99,7 +100,7 @@ export default function CalibrationPanel() {
           <h3 className="text-white/90 text-base font-medium tracking-wide">时间校准</h3>
           <button
             onClick={() => setShowCalibration(false)}
-            className="p-1.5 rounded-lg hover:bg-white/8 text-white/30 hover:text-white/70 transition-all"
+            className="p-1.5 rounded-lg hover:bg-white/8 text-white/30 hover:text-white/70 transition-all active:scale-95"
           >
             <X size={18} />
           </button>
@@ -110,30 +111,20 @@ export default function CalibrationPanel() {
           <div>
             <label className="text-[11px] text-white/35 uppercase tracking-wider mb-2.5 block font-medium">校准方向</label>
             <div className="flex gap-2">
-              <button
+              <DirectionButton
+                isSelected={direction === 'fast'}
                 onClick={() => setDirection('fast')}
-                className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
-                style={{
-                  background: direction === 'fast' ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.03)',
-                  color: direction === 'fast' ? '#60a5fa' : 'rgba(255,255,255,0.4)',
-                  border: direction === 'fast' ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,255,255,0.06)',
-                }}
-              >
-                <Plus size={13} className="inline mr-1" style={{ verticalAlign: '-1.5px' }} />
-                调快（超前）
-              </button>
-              <button
+                icon={<Plus size={13} />}
+                label="调快（超前）"
+                color="blue"
+              />
+              <DirectionButton
+                isSelected={direction === 'slow'}
                 onClick={() => setDirection('slow')}
-                className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
-                style={{
-                  background: direction === 'slow' ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.03)',
-                  color: direction === 'slow' ? '#f87171' : 'rgba(255,255,255,0.4)',
-                  border: direction === 'slow' ? '1px solid rgba(239,68,68,0.25)' : '1px solid rgba(255,255,255,0.06)',
-                }}
-              >
-                <Minus size={13} className="inline mr-1" style={{ verticalAlign: '-1.5px' }} />
-                调慢（滞后）
-              </button>
+                icon={<Minus size={13} />}
+                label="调慢（滞后）"
+                color="red"
+              />
             </div>
           </div>
 
@@ -141,20 +132,14 @@ export default function CalibrationPanel() {
           <div>
             <label className="text-[11px] text-white/35 uppercase tracking-wider mb-2.5 block font-medium">校准量（秒）</label>
             <div className="flex items-center gap-2">
-              <button
+              <AdjustButton
                 onClick={() => adjustAmount(-1)}
-                className="p-2 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/8 transition-all"
-                style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                <Minus size={15} />
-              </button>
-              <button
+                icon={<Minus size={15} />}
+              />
+              <AdjustButton
                 onClick={() => adjustAmount(-0.1)}
-                className="px-2.5 py-2 rounded-lg text-xs text-white/40 hover:text-white/80 hover:bg-white/8 transition-all font-mono"
-                style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                -0.1
-              </button>
+                label="-0.1"
+              />
               <div className="flex-1">
                 <input
                   type="number"
@@ -175,20 +160,14 @@ export default function CalibrationPanel() {
                   }}
                 />
               </div>
-              <button
+              <AdjustButton
                 onClick={() => adjustAmount(0.1)}
-                className="px-2.5 py-2 rounded-lg text-xs text-white/40 hover:text-white/80 hover:bg-white/8 transition-all font-mono"
-                style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                +0.1
-              </button>
-              <button
+                label="+0.1"
+              />
+              <AdjustButton
                 onClick={() => adjustAmount(1)}
-                className="p-2 rounded-lg text-white/40 hover:text-white/80 hover:bg-white/8 transition-all"
-                style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-              >
-                <Plus size={15} />
-              </button>
+                icon={<Plus size={15} />}
+              />
             </div>
             {/* Slider */}
             <input
@@ -234,30 +213,138 @@ export default function CalibrationPanel() {
 
           {/* Actions */}
           <div className="flex gap-3 pt-1">
-            <button
+            <ActionButton
               onClick={resetCalibration}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/8 transition-all"
-              style={{ border: '1px solid rgba(255,255,255,0.06)' }}
-            >
-              <RotateCcw size={14} />
-              重置
-            </button>
-            <button
+              icon={<RotateCcw size={14} />}
+              label="重置"
+              variant="secondary"
+            />
+            <ActionButton
               onClick={applyCalibration}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all duration-200"
-              style={{
-                background: hasChanges
-                  ? (direction === 'fast' ? 'rgba(59,130,246,0.9)' : 'rgba(239,68,68,0.85)')
-                  : 'rgba(59,130,246,0.9)',
-                color: '#fff',
-              }}
-            >
-              <Check size={15} />
-              应用校准
-            </button>
+              icon={<Check size={15} />}
+              label="应用校准"
+              variant="primary"
+              color={direction === 'fast' ? 'blue' : 'red'}
+            />
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function DirectionButton({ isSelected, onClick, icon, label, color }: {
+  isSelected: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  color: 'blue' | 'red';
+}) {
+  const [isPressed, setIsPressed] = useState(false);
+
+  const bgColor = color === 'blue'
+    ? (isSelected ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.03)')
+    : (isSelected ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.03)');
+
+  const textColor = color === 'blue'
+    ? (isSelected ? '#60a5fa' : 'rgba(255,255,255,0.4)')
+    : (isSelected ? '#f87171' : 'rgba(255,255,255,0.4)');
+
+  const borderColor = color === 'blue'
+    ? (isSelected ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.06)')
+    : (isSelected ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.06)');
+
+  const pressedBgColor = color === 'blue'
+    ? 'rgba(59,130,246,0.25)'
+    : 'rgba(239,68,68,0.2)';
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={() => setIsPressed(false)}
+      className="flex-1 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 active:scale-95"
+      style={{
+        background: isPressed ? pressedBgColor : bgColor,
+        color: textColor,
+        border: `1px solid ${borderColor}`,
+        boxShadow: isPressed ? `inset 0 2px 4px rgba(0,0,0,0.3)` : 'none',
+      }}
+    >
+      {icon && <span className="inline mr-1" style={{ verticalAlign: '-1.5px' }}>{icon}</span>}
+      {label}
+    </button>
+  );
+}
+
+function AdjustButton({ onClick, icon, label }: {
+  onClick: () => void;
+  icon?: React.ReactNode;
+  label?: string;
+}) {
+  const [isPressed, setIsPressed] = useState(false);
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={() => setIsPressed(false)}
+      className={`rounded-lg transition-all duration-150 active:scale-95 ${label ? 'px-2.5 py-2 text-xs font-mono' : 'p-2'}`}
+      style={{
+        border: '1px solid rgba(255,255,255,0.06)',
+        color: isPressed ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)',
+        background: isPressed ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.04)',
+        boxShadow: isPressed ? 'inset 0 2px 4px rgba(0,0,0,0.3)' : 'none',
+      }}
+    >
+      {icon || label}
+    </button>
+  );
+}
+
+function ActionButton({ onClick, icon, label, variant, color }: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+  variant: 'primary' | 'secondary';
+  color?: 'blue' | 'red';
+}) {
+  const [isPressed, setIsPressed] = useState(false);
+
+  const isPrimary = variant === 'primary';
+  const isBlue = color === 'blue';
+
+  let bgColor = 'rgba(255,255,255,0.04)';
+  let textColor = 'rgba(255,255,255,0.4)';
+  let borderColor = 'rgba(255,255,255,0.06)';
+  let pressedBgColor = 'rgba(255,255,255,0.12)';
+
+  if (isPrimary) {
+    bgColor = isBlue ? 'rgba(59,130,246,0.9)' : 'rgba(239,68,68,0.85)';
+    textColor = '#fff';
+    borderColor = isBlue ? 'rgba(59,130,246,0.5)' : 'rgba(239,68,68,0.5)';
+    pressedBgColor = isBlue ? 'rgba(59,130,246,0.7)' : 'rgba(239,68,68,0.7)';
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={() => setIsPressed(false)}
+      className={`flex items-center justify-center gap-2 rounded-lg text-sm font-medium transition-all duration-150 active:scale-95 ${isPrimary ? 'flex-1' : ''}`}
+      style={{
+        background: isPressed ? pressedBgColor : bgColor,
+        color: textColor,
+        border: `1px solid ${borderColor}`,
+        boxShadow: isPressed ? `inset 0 2px 4px rgba(0,0,0,0.3)` : 'none',
+        padding: isPrimary ? '0.625rem 1rem' : '0.625rem 1rem',
+      }}
+    >
+      {icon}
+      {label}
+    </button>
   );
 }

@@ -48,6 +48,7 @@ export default function ClockDisplay() {
 
   const dateFontSize = fontSize / 3;
   const digitHeight = fontSize * 1.15;
+  const dateHeight = digitHeight * (lineHeight / 100);
   const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
 
   return (
@@ -60,12 +61,13 @@ export default function ClockDisplay() {
       {/* Date display */}
       {showDate && (
         <div
-          className="transition-all duration-300"
+          className="transition-all duration-300 flex items-center"
           style={{
             fontFamily: "'Noto Sans SC', system-ui, sans-serif",
             fontSize: `${dateFontSize}px`,
             color: fontColor,
-            marginBottom: `${fontSize * 0.12}px`,
+            height: `${dateHeight}px`,
+            marginBottom: `${fontSize * 0.12 * (lineHeight / 100)}px`,
             letterSpacing: '0.1em',
             opacity: 0.75,
             fontWeight: 300,
