@@ -13,6 +13,8 @@ export const FONT_OPTIONS = [
   { label: 'Oswald', value: "'Oswald', sans-serif" },
   { label: 'Anton', value: "'Anton', sans-serif" },
   { label: 'Bebas Neue', value: "'Bebas Neue', sans-serif" },
+  { label: 'Playfair Display', value: "'Playfair Display', serif" },
+  { label: 'Lora', value: "'Lora', serif" },
 ];
 
 export interface ClockSettings {

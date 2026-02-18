@@ -6,8 +6,9 @@
  * - 全屏模式下隐藏
  * - 包含：字号调节、字体选择、颜色选择、隐藏秒、显示日期、全屏、校准
  * - 默认展开，可折叠
+ * - 按钮点击动画反馈
  */
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useClock, FONT_OPTIONS } from '@/contexts/ClockContext';
 import {
   Maximize,
@@ -33,7 +34,7 @@ export default function ControlBar() {
       <div className="flex justify-center relative z-10">
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1.5 px-5 py-1.5 rounded-t-lg transition-all duration-200 hover:bg-white/10"
+          className="flex items-center gap-1.5 px-5 py-1.5 rounded-t-lg transition-all duration-200 hover:bg-white/10 active:scale-95"
           style={{
             background: 'rgba(18, 18, 18, 0.92)',
             backdropFilter: 'blur(20px)',
@@ -97,7 +98,7 @@ export default function ControlBar() {
               <select
                 value={settings.fontFamily}
                 onChange={e => updateSettings({ fontFamily: e.target.value })}
-                className="w-full bg-white/5 border border-white/8 rounded-md px-3 py-2 text-sm text-white/70 outline-none focus:border-blue-500/40 transition-colors appearance-none"
+                className="w-full bg-white/5 border border-white/8 rounded-md px-3 py-2 text-sm text-white/70 outline-none focus:border-blue-500/40 transition-colors appearance-none active:scale-95"
                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
               >
                 {FONT_OPTIONS.map(f => (
@@ -208,15 +209,23 @@ function ToggleOption({ icon, label, checked, onChange }: {
   checked: boolean;
   onChange: (v: boolean) => void;
 }) {
+  const [isPressed, setIsPressed] = useState(false);
+
   return (
     <button
-      className="flex items-center gap-2.5 group"
+      className="flex items-center gap-2.5 group transition-transform duration-150 active:scale-95"
       onClick={() => onChange(!checked)}
+      onMouseDown={() => setIsPressed(true)}
+      onMouseUp={() => setIsPressed(false)}
+      onMouseLeave={() => setIsPressed(false)}
     >
       <div
-        className="relative w-9 h-[20px] rounded-full transition-colors duration-200 shrink-0"
+        className="relative w-9 h-[20px] rounded-full transition-all duration-200 shrink-0"
         style={{
-          background: checked ? '#3b82f6' : 'rgba(255,255,255,0.08)',
+          background: isPressed
+            ? (checked ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255,255,255,0.12)')
+            : (checked ? '#3b82f6' : 'rgba(255,255,255,0.08)'),
+          boxShadow: isPressed ? 'inset 0 2px 4px rgba(0,0,0,0.3)' : 'none',
         }}
       >
         <div
@@ -240,14 +249,28 @@ function ActionButton({ icon, label, onClick, active }: {
   onClick: () => void;
   active?: boolean;
 }) {
+  const [isPressed, setIsPressed] = useState(false);
+
+  const handleMouseDown = () => setIsPressed(true);
+  const handleMouseUp = () => setIsPressed(false);
+  const handleMouseLeave = () => setIsPressed(false);
+
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all duration-150"
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all duration-150 active:scale-95"
       style={{
-        background: active ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)',
+        background: isPressed
+          ? (active ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.08)')
+          : (active ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)'),
         border: active ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,255,255,0.06)',
         color: active ? 'rgba(59,130,246,0.9)' : 'rgba(255,255,255,0.5)',
+        boxShadow: isPressed
+          ? (active ? 'inset 0 2px 4px rgba(59,130,246,0.2)' : 'inset 0 2px 4px rgba(0,0,0,0.3)')
+          : 'none',
       }}
     >
       {icon}
