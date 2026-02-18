@@ -17,7 +17,7 @@ function padTwo(n: number): string {
 
 export default function ClockDisplay() {
   const { settings } = useClock();
-  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset } = settings;
+  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing } = settings;
 
   const getTimeNow = () => {
     const now = new Date(Date.now() + calibrationOffset);
@@ -76,17 +76,17 @@ export default function ClockDisplay() {
       )}
 
       {/* Time display */}
-      <div className="flex items-center" style={{ height: `${digitHeight}px` }}>
+      <div className="flex items-center" style={{ height: `${digitHeight * (lineHeight / 100)}px`, lineHeight: `${lineHeight}%` }}>
         {/* Hours */}
-        <DigitRoller digit={time.hours[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} />
-        <DigitRoller digit={time.hours[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} />
+        <DigitRoller digit={time.hours[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} />
+        <DigitRoller digit={time.hours[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} />
 
         {/* Colon 1 */}
         <ColonDots fontSize={fontSize} color={fontColor} height={digitHeight} />
 
         {/* Minutes */}
-        <DigitRoller digit={time.minutes[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} />
-        <DigitRoller digit={time.minutes[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} />
+        <DigitRoller digit={time.minutes[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} />
+        <DigitRoller digit={time.minutes[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} />
 
         {/* Colon 2 */}
         <ColonDots fontSize={fontSize} color={fontColor} height={digitHeight} />
@@ -98,6 +98,7 @@ export default function ClockDisplay() {
           fontFamily={fontFamily}
           color={fontColor}
           animate={!hideSeconds}
+          letterSpacing={letterSpacing}
         />
         <DigitRoller
           digit={time.seconds[1]}
@@ -105,6 +106,7 @@ export default function ClockDisplay() {
           fontFamily={fontFamily}
           color={fontColor}
           animate={!hideSeconds}
+          letterSpacing={letterSpacing}
         />
       </div>
     </div>

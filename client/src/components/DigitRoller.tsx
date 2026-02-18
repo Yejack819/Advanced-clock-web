@@ -16,12 +16,13 @@ interface DigitRollerProps {
   fontFamily: string;
   color: string;
   animate?: boolean;
+  letterSpacing?: number; // 左右间距，像素值
 }
 
 // Extended strip: 0,1,2,3,4,5,6,7,8,9,0 (extra 0 at end for 9->0 wrap)
 const DIGITS_EXTENDED = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
-export default function DigitRoller({ digit, fontSize, fontFamily, color, animate = true }: DigitRollerProps) {
+export default function DigitRoller({ digit, fontSize, fontFamily, color, animate = true, letterSpacing = 0 }: DigitRollerProps) {
   const targetIndex = parseInt(digit, 10) || 0;
   const cellHeight = fontSize * 1.15;
 
@@ -104,6 +105,8 @@ export default function DigitRoller({ digit, fontSize, fontFamily, color, animat
         overflow: 'hidden',
         display: 'inline-block',
         perspective: `${fontSize * 3}px`,
+        marginLeft: `${letterSpacing / 2}px`,
+        marginRight: `${letterSpacing / 2}px`,
       }}
     >
       {/* Top gradient mask - deeper for 3D drum effect */}
@@ -177,6 +180,7 @@ export default function DigitRoller({ digit, fontSize, fontFamily, color, animat
               fontWeight: 500,
               userSelect: 'none',
               textRendering: 'geometricPrecision',
+              letterSpacing: `${letterSpacing}px`,
             }}
           >
             {d}

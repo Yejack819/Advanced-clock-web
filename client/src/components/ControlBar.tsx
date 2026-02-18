@@ -4,7 +4,7 @@
  * 设计哲学：暗黑机械美学
  * - 毛玻璃效果背景
  * - 全屏模式下隐藏
- * - 包含：字号调节、字体选择、颜色选择、隐藏秒、显示日期、全屏、校准
+ * - 包含：字号调节、字体选择、颜色选择、隐藏秒、显示日期、全屏、校准、高度、间距
  * - 默认展开，可折叠
  * - 按钮点击动画反馈
  */
@@ -22,6 +22,8 @@ import {
   ChevronDown,
   Crosshair,
   Clock,
+  ArrowUpDown,
+  Maximize2,
 } from 'lucide-react';
 
 export default function ControlBar() {
@@ -62,7 +64,7 @@ export default function ControlBar() {
       <div
         className="transition-all duration-400 overflow-hidden"
         style={{
-          maxHeight: expanded ? '500px' : '0px',
+          maxHeight: expanded ? '600px' : '0px',
           background: 'rgba(14, 14, 14, 0.95)',
           backdropFilter: 'blur(30px)',
           borderTop: expanded ? '1px solid rgba(255,255,255,0.06)' : 'none',
@@ -89,6 +91,50 @@ export default function ControlBar() {
                 />
                 <span className="text-xs text-white/40 w-14 text-right font-mono tabular-nums">
                   {settings.fontSize}px
+                </span>
+              </div>
+            </ControlGroup>
+
+            {/* Line Height (整体高度) */}
+            <ControlGroup icon={<ArrowUpDown size={14} />} label="整体高度">
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="50"
+                  max="150"
+                  step="5"
+                  value={settings.lineHeight}
+                  onChange={e => updateSettings({ lineHeight: Number(e.target.value) })}
+                  className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer"
+                  style={{
+                    accentColor: '#3b82f6',
+                    background: 'rgba(255,255,255,0.08)',
+                  }}
+                />
+                <span className="text-xs text-white/40 w-14 text-right font-mono tabular-nums">
+                  {settings.lineHeight}%
+                </span>
+              </div>
+            </ControlGroup>
+
+            {/* Letter Spacing (数字间距) */}
+            <ControlGroup icon={<Maximize2 size={14} />} label="数字间距">
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="-20"
+                  max="50"
+                  step="1"
+                  value={settings.letterSpacing}
+                  onChange={e => updateSettings({ letterSpacing: Number(e.target.value) })}
+                  className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer"
+                  style={{
+                    accentColor: '#3b82f6',
+                    background: 'rgba(255,255,255,0.08)',
+                  }}
+                />
+                <span className="text-xs text-white/40 w-14 text-right font-mono tabular-nums">
+                  {settings.letterSpacing}px
                 </span>
               </div>
             </ControlGroup>

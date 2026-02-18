@@ -25,6 +25,8 @@ export interface ClockSettings {
   hideSeconds: boolean;
   showDate: boolean;
   calibrationOffset: number; // in milliseconds
+  lineHeight: number; // 整体高度调整，百分比 (50-150)
+  letterSpacing: number; // 数字左右间距，像素值 (-20 to 50)
 }
 
 const DEFAULT_SETTINGS: ClockSettings = {
@@ -35,6 +37,8 @@ const DEFAULT_SETTINGS: ClockSettings = {
   hideSeconds: false,
   showDate: false,
   calibrationOffset: 0,
+  lineHeight: 100,
+  letterSpacing: 0,
 };
 
 const STORAGE_KEY = 'advanced-clock-settings';
