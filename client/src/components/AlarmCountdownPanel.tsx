@@ -6,7 +6,7 @@
  * - 闹钟和倒计时分两个标签页
  * - 倒计时状态持久化到 Context，关闭面板后继续运行
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useClock } from '@/contexts/ClockContext';
 import { X, Bell, Timer, Play, Pause, RotateCcw } from 'lucide-react';
 
@@ -14,6 +14,8 @@ export default function AlarmCountdownPanel() {
   const { settings, updateSettings, setShowAlarmCountdown, countdownRemaining, countdownRunning, startCountdown, pauseCountdown, resetCountdown } = useClock();
   const [activeTab, setActiveTab] = useState<'alarm' | 'countdown'>('alarm');
   const [countdownMinutes, setCountdownMinutes] = useState(settings.countdownMinutes || 5);
+  const prevCountdownRunningRef = useRef(countdownRunning);
+  const hasAlertedRef = useRef(false);
 
   // Alarm check
   useEffect(() => {
@@ -35,10 +37,19 @@ export default function AlarmCountdownPanel() {
 
   // Countdown timer alert when finished
   useEffect(() => {
-    if (countdownRemaining > 0 && !countdownRunning) {
+    // Only alert when countdown finishes (reaches 0 from running state)
+    if (countdownRemaining === 0 && prevCountdownRunningRef.current && !countdownRunning && !hasAlertedRef.current) {
       playAlarmSound();
       alert('倒计时结束！');
+      hasAlertedRef.current = true;
     }
+    
+    // Reset alert flag when countdown starts again
+    if (countdownRunning && countdownRemaining > 0) {
+      hasAlertedRef.current = false;
+    }
+    
+    prevCountdownRunningRef.current = countdownRunning;
   }, [countdownRemaining, countdownRunning]);
 
   const playAlarmSound = () => {
@@ -60,15 +71,20 @@ export default function AlarmCountdownPanel() {
   };
 
   const handleStartCountdown = () => {
+    hasAlertedRef.current = false;
     startCountdown(countdownMinutes);
   };
 
+
+
   const handlePauseCountdown = () => {
     pauseCountdown();
+    // Ensure we don't trigger the finish alert when just pausing
   };
 
   const handleResetCountdown = () => {
     resetCountdown();
+    hasAlertedRef.current = false;
   };
 
   const formatCountdown = (seconds: number) => {
@@ -197,6 +213,9 @@ export default function AlarmCountdownPanel() {
                   <div className="text-5xl font-mono text-white/90 tabular-nums">
                     {formatCountdown(countdownRemaining)}
                   </div>
+                  {!countdownRunning && countdownRemaining > 0 && (
+                    <div className="text-sm text-yellow-400 mt-2">已暂停</div>
+                  )}
                 </div>
               )}
 
@@ -204,11 +223,12 @@ export default function AlarmCountdownPanel() {
               <div className="flex gap-2">
                 {!countdownRunning ? (
                   <button
-                    onClick={handleStartCountdown}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-all active:scale-95"
+                    onClick={countdownRemaining > 0 ? handleStartCountdown : undefined}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-all active:scale-95 disabled:opacity-50"
+                    disabled={countdownRemaining === 0}
                   >
                     <Play size={16} />
-                    开始
+                    {countdownRemaining > 0 ? '继续' : '开始'}
                   </button>
                 ) : (
                   <button

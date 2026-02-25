@@ -113,33 +113,62 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
 
   // Countdown logic
   useEffect(() => {
-    if (!countdownRunning || countdownRemaining <= 0) return;
+    // Clear existing interval
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
 
+    // Only run if countdown is running and has time remaining
+    if (!countdownRunning || countdownRemaining <= 0) {
+      return;
+    }
+
+    // Start new interval
     countdownIntervalRef.current = setInterval(() => {
       setCountdownRemaining(prev => {
-        if (prev <= 1) {
+        const newValue = prev - 1;
+        if (newValue <= 0) {
+          // Countdown finished
           setCountdownRunning(false);
           return 0;
         }
-        return prev - 1;
+        return newValue;
       });
     }, 1000);
 
+    // Cleanup on unmount or when dependencies change
     return () => {
-      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+      if (countdownIntervalRef.current) {
+        clearInterval(countdownIntervalRef.current);
+        countdownIntervalRef.current = null;
+      }
     };
   }, [countdownRunning, countdownRemaining]);
 
   const startCountdown = (minutes: number) => {
+    // Clear any existing interval
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
     setCountdownRemaining(minutes * 60);
     setCountdownRunning(true);
   };
 
   const pauseCountdown = () => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
     setCountdownRunning(false);
   };
 
   const resetCountdown = () => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
     setCountdownRunning(false);
     setCountdownRemaining(0);
   };
