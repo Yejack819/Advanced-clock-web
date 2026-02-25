@@ -254,9 +254,9 @@ export default function AlarmCountdownPanel() {
               <div className="flex gap-2">
                 {!countdownRunning ? (
                   <button
-                    onClick={countdownRemaining > 0 ? handleStartCountdown : undefined}
+                    onClick={handleStartCountdown}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-all active:scale-95 disabled:opacity-50"
-                    disabled={countdownRemaining === 0}
+                    disabled={countdownRemaining > 0 && (countdownHours === 0 && countdownMinutes === 0 && countdownSeconds === 0)}
                   >
                     <Play size={16} />
                     {countdownRemaining > 0 ? '继续' : '开始'}

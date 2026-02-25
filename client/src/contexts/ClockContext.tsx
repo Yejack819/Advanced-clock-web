@@ -152,7 +152,9 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       clearInterval(countdownIntervalRef.current);
       countdownIntervalRef.current = null;
     }
-    setCountdownRemaining(minutes * 60);
+    // Ensure minutes is valid
+    const validMinutes = Math.max(0.01, minutes); // At least 0.01 minutes (0.6 seconds)
+    setCountdownRemaining(validMinutes * 60);
     setCountdownRunning(true);
   };
 
