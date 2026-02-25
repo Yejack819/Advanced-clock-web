@@ -64,6 +64,11 @@ interface ClockContextType {
   setShowCalibration: (v: boolean) => void;
   showAlarmCountdown: boolean;
   setShowAlarmCountdown: (v: boolean) => void;
+  countdownRemaining: number; // 倒计时剩余秒数
+  countdownRunning: boolean; // 倒计时是否运行中
+  startCountdown: (minutes: number) => void;
+  pauseCountdown: () => void;
+  resetCountdown: () => void;
   exportConfig: () => void;
   importConfig: (file: File) => Promise<void>;
   applyTheme: (theme: 'cyberpunk' | 'minimal' | 'retro') => void;
@@ -86,6 +91,9 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCalibration, setShowCalibration] = useState(false);
   const [showAlarmCountdown, setShowAlarmCountdown] = useState(false);
+  const [countdownRemaining, setCountdownRemaining] = useState(0);
+  const [countdownRunning, setCountdownRunning] = useState(false);
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auto-save settings with debounce
@@ -102,6 +110,39 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
   }, [settings]);
+
+  // Countdown logic
+  useEffect(() => {
+    if (!countdownRunning || countdownRemaining <= 0) return;
+
+    countdownIntervalRef.current = setInterval(() => {
+      setCountdownRemaining(prev => {
+        if (prev <= 1) {
+          setCountdownRunning(false);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+    };
+  }, [countdownRunning, countdownRemaining]);
+
+  const startCountdown = (minutes: number) => {
+    setCountdownRemaining(minutes * 60);
+    setCountdownRunning(true);
+  };
+
+  const pauseCountdown = () => {
+    setCountdownRunning(false);
+  };
+
+  const resetCountdown = () => {
+    setCountdownRunning(false);
+    setCountdownRemaining(0);
+  };
 
   const updateSettings = useCallback((partial: Partial<ClockSettings>) => {
     setSettings(prev => ({ ...prev, ...partial }));
@@ -181,6 +222,11 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       setShowCalibration,
       showAlarmCountdown,
       setShowAlarmCountdown,
+      countdownRemaining,
+      countdownRunning,
+      startCountdown,
+      pauseCountdown,
+      resetCountdown,
       exportConfig,
       importConfig,
       applyTheme,

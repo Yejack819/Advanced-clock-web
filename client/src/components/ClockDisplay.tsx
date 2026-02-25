@@ -16,7 +16,7 @@ function padTwo(n: number): string {
 }
 
 export default function ClockDisplay() {
-  const { settings } = useClock();
+  const { settings, countdownRemaining, countdownRunning } = useClock();
   const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, timezone } = settings;
 
   const getTimeNow = () => {
@@ -77,6 +77,23 @@ export default function ClockDisplay() {
           }}
         >
           {time.year}年{time.month}月{time.day}日 星期{weekdays[time.weekday]}
+        </div>
+      )}
+
+      {/* Countdown display (small) */}
+      {countdownRemaining > 0 && (
+        <div
+          style={{
+            fontSize: `${fontSize * 0.25}px`,
+            color: fontColor,
+            opacity: 0.6,
+            marginBottom: `${fontSize * 0.1}px`,
+            fontFamily: fontFamily,
+            fontWeight: 600,
+            letterSpacing: '0.05em',
+          }}
+        >
+          {Math.floor(countdownRemaining / 60).toString().padStart(2, '0')}:{(countdownRemaining % 60).toString().padStart(2, '0')}
         </div>
       )}
 

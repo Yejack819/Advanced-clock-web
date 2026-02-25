@@ -4,17 +4,16 @@
  * 设计哲学：暗黑机械美学
  * - 毛玻璃效果的浮动面板
  * - 闹钟和倒计时分两个标签页
- * - 所有设置自动保存
+ * - 倒计时状态持久化到 Context，关闭面板后继续运行
  */
 import React, { useState, useEffect } from 'react';
 import { useClock } from '@/contexts/ClockContext';
 import { X, Bell, Timer, Play, Pause, RotateCcw } from 'lucide-react';
 
 export default function AlarmCountdownPanel() {
-  const { settings, updateSettings, setShowAlarmCountdown } = useClock();
+  const { settings, updateSettings, setShowAlarmCountdown, countdownRemaining, countdownRunning, startCountdown, pauseCountdown, resetCountdown } = useClock();
   const [activeTab, setActiveTab] = useState<'alarm' | 'countdown'>('alarm');
-  const [countdownRemaining, setCountdownRemaining] = useState(0);
-  const [countdownRunning, setCountdownRunning] = useState(false);
+  const [countdownMinutes, setCountdownMinutes] = useState(settings.countdownMinutes || 5);
 
   // Alarm check
   useEffect(() => {
@@ -34,24 +33,13 @@ export default function AlarmCountdownPanel() {
     return () => clearInterval(interval);
   }, [settings.alarmEnabled, settings.alarmTime]);
 
-  // Countdown timer
+  // Countdown timer alert when finished
   useEffect(() => {
-    if (!countdownRunning || countdownRemaining <= 0) return;
-
-    const interval = setInterval(() => {
-      setCountdownRemaining(prev => {
-        if (prev <= 1) {
-          setCountdownRunning(false);
-          playAlarmSound();
-          alert('倒计时结束！');
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [countdownRunning, countdownRemaining]);
+    if (countdownRemaining > 0 && !countdownRunning) {
+      playAlarmSound();
+      alert('倒计时结束！');
+    }
+  }, [countdownRemaining, countdownRunning]);
 
   const playAlarmSound = () => {
     // Simple beep using Web Audio API
@@ -71,18 +59,16 @@ export default function AlarmCountdownPanel() {
     oscillator.stop(audioContext.currentTime + 0.5);
   };
 
-  const startCountdown = () => {
-    setCountdownRemaining(settings.countdownMinutes * 60);
-    setCountdownRunning(true);
+  const handleStartCountdown = () => {
+    startCountdown(countdownMinutes);
   };
 
-  const pauseCountdown = () => {
-    setCountdownRunning(false);
+  const handlePauseCountdown = () => {
+    pauseCountdown();
   };
 
-  const resetCountdown = () => {
-    setCountdownRunning(false);
-    setCountdownRemaining(0);
+  const handleResetCountdown = () => {
+    resetCountdown();
   };
 
   const formatCountdown = (seconds: number) => {
@@ -198,8 +184,8 @@ export default function AlarmCountdownPanel() {
                   type="number"
                   min="1"
                   max="999"
-                  value={settings.countdownMinutes}
-                  onChange={e => updateSettings({ countdownMinutes: Number(e.target.value) })}
+                  value={countdownMinutes}
+                  onChange={e => setCountdownMinutes(Number(e.target.value))}
                   className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-3 text-white/90 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors"
                   disabled={countdownRunning}
                 />
@@ -218,7 +204,7 @@ export default function AlarmCountdownPanel() {
               <div className="flex gap-2">
                 {!countdownRunning ? (
                   <button
-                    onClick={startCountdown}
+                    onClick={handleStartCountdown}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-all active:scale-95"
                   >
                     <Play size={16} />
@@ -226,7 +212,7 @@ export default function AlarmCountdownPanel() {
                   </button>
                 ) : (
                   <button
-                    onClick={pauseCountdown}
+                    onClick={handlePauseCountdown}
                     className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/30 transition-all active:scale-95"
                   >
                     <Pause size={16} />
@@ -234,7 +220,7 @@ export default function AlarmCountdownPanel() {
                   </button>
                 )}
                 <button
-                  onClick={resetCountdown}
+                  onClick={handleResetCountdown}
                   className="flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 transition-all active:scale-95"
                 >
                   <RotateCcw size={16} />
