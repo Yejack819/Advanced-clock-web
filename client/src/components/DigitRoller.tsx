@@ -18,12 +18,13 @@ interface DigitRollerProps {
   animate?: boolean;
   letterSpacing?: number; // 左右间距，像素值
   lineHeight?: number; // 整体高度百分比
+  animationSpeed?: number; // 动画速度，秒
 }
 
 // Extended strip: 0,1,2,3,4,5,6,7,8,9,0 (extra 0 at end for 9->0 wrap)
 const DIGITS_EXTENDED = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'];
 
-export default function DigitRoller({ digit, fontSize, fontFamily, color, animate = true, letterSpacing = 0, lineHeight = 100 }: DigitRollerProps) {
+export default function DigitRoller({ digit, fontSize, fontFamily, color, animate = true, letterSpacing = 0, lineHeight = 100, animationSpeed = 0.5 }: DigitRollerProps) {
   const targetIndex = parseInt(digit, 10) || 0;
   const cellHeight = fontSize * 1.15 * (lineHeight / 100);
 
@@ -158,7 +159,7 @@ export default function DigitRoller({ digit, fontSize, fontFamily, color, animat
         style={{
           transform: `translateY(${translateY}px)`,
           transition: useTransition
-            ? 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1)'
+            ? `transform ${animationSpeed}s cubic-bezier(0.22, 1, 0.36, 1)`
             : 'none',
           willChange: 'transform',
           filter: isAnimating ? 'blur(0.3px)' : 'none',

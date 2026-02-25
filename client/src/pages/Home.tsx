@@ -12,9 +12,10 @@ import { ClockProvider, useClock } from '@/contexts/ClockContext';
 import ClockDisplay from '@/components/ClockDisplay';
 import ControlBar from '@/components/ControlBar';
 import CalibrationPanel from '@/components/CalibrationPanel';
+import AlarmCountdownPanel from '@/components/AlarmCountdownPanel';
 
 function ClockPage() {
-  const { settings, isFullscreen, showCalibration, toggleFullscreen, setShowCalibration, updateSettings } = useClock();
+  const { settings, isFullscreen, showCalibration, showAlarmCountdown, toggleFullscreen, setShowCalibration, updateSettings } = useClock();
 
   // Keyboard shortcuts
   React.useEffect(() => {
@@ -73,6 +74,9 @@ function ClockPage() {
 
       {/* Calibration panel */}
       {showCalibration && !isFullscreen && <CalibrationPanel />}
+
+      {/* Alarm/Countdown panel */}
+      {showAlarmCountdown && !isFullscreen && <AlarmCountdownPanel />}
 
       {/* Fullscreen hint with keyboard shortcuts */}
       {isFullscreen && (

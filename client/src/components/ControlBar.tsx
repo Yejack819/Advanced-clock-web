@@ -26,10 +26,11 @@ import {
   Download,
   Upload,
   Palette as PaletteIcon,
+  Bell,
 } from 'lucide-react';
 
 export default function ControlBar() {
-  const { settings, updateSettings, isFullscreen, toggleFullscreen, setShowCalibration, showCalibration, exportConfig, importConfig, applyTheme } = useClock();
+  const { settings, updateSettings, isFullscreen, toggleFullscreen, setShowCalibration, showCalibration, setShowAlarmCountdown, showAlarmCountdown, exportConfig, importConfig, applyTheme } = useClock();
   const [expanded, setExpanded] = useState(true);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -98,6 +99,28 @@ export default function ControlBar() {
               </div>
             </ControlGroup>
 
+            {/* Animation Speed (动画速度) */}
+            <ControlGroup icon={<Clock size={14} />} label="动画速度">
+              <div className="flex items-center gap-3">
+                <input
+                  type="range"
+                  min="0.3"
+                  max="1.0"
+                  step="0.1"
+                  value={settings.animationSpeed}
+                  onChange={e => updateSettings({ animationSpeed: Number(e.target.value) })}
+                  className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer"
+                  style={{
+                    accentColor: '#3b82f6',
+                    background: 'rgba(255,255,255,0.08)',
+                  }}
+                />
+                <span className="text-xs text-white/40 w-14 text-right font-mono tabular-nums">
+                  {settings.animationSpeed.toFixed(1)}s
+                </span>
+              </div>
+            </ControlGroup>
+
             {/* Letter Spacing (数字间距) */}
             <ControlGroup icon={<Maximize2 size={14} />} label="数字间距">
               <div className="flex items-center gap-3">
@@ -120,8 +143,26 @@ export default function ControlBar() {
               </div>
             </ControlGroup>
 
+            {/* Timezone */}
+            <ControlGroup icon={<Clock size={14} />} label="时区">
+              <select
+                value={settings.timezone}
+                onChange={e => updateSettings({ timezone: e.target.value })}
+                className="w-full bg-white/5 border border-white/8 rounded-md px-3 py-2 text-sm text-white/70 outline-none focus:border-blue-500/40 transition-colors appearance-none active:scale-95"
+                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
+              >
+                <option value="Asia/Shanghai" style={{ background: '#141414', color: '#ccc' }}>上海 (UTC+8)</option>
+                <option value="Asia/Tokyo" style={{ background: '#141414', color: '#ccc' }}>东京 (UTC+9)</option>
+                <option value="America/New_York" style={{ background: '#141414', color: '#ccc' }}>纽约 (UTC-5)</option>
+                <option value="America/Los_Angeles" style={{ background: '#141414', color: '#ccc' }}>洛杉矶 (UTC-8)</option>
+                <option value="Europe/London" style={{ background: '#141414', color: '#ccc' }}>伦敦 (UTC+0)</option>
+                <option value="Europe/Paris" style={{ background: '#141414', color: '#ccc' }}>巴黎 (UTC+1)</option>
+                <option value="Australia/Sydney" style={{ background: '#141414', color: '#ccc' }}>悉尼 (UTC+11)</option>
+              </select>
+            </ControlGroup>
+
             {/* Font Family */}
-            <ControlGroup icon={<Clock size={14} />} label="字体">
+            <ControlGroup icon={<Type size={14} />} label="字体">
               <select
                 value={settings.fontFamily}
                 onChange={e => updateSettings({ fontFamily: e.target.value })}
@@ -207,6 +248,12 @@ export default function ControlBar() {
                   label="时间校准"
                   onClick={() => setShowCalibration(!showCalibration)}
                   active={showCalibration}
+                />
+                <ActionButton
+                  icon={<Bell size={14} />}
+                  label="闹钟/倒计时"
+                  onClick={() => setShowAlarmCountdown(!showAlarmCountdown)}
+                  active={showAlarmCountdown}
                 />
               </div>
             </ControlGroup>

@@ -27,6 +27,12 @@ export interface ClockSettings {
   calibrationOffset: number; // in milliseconds
   lineHeight: number; // 整体高度调整，百分比 (50-150)
   letterSpacing: number; // 数字左右间距，像素值 (-20 to 50)
+  animationSpeed: number; // 动画速度，秒 (0.3-1.0)
+  timezone: string; // 时区，例如 'Asia/Shanghai', 'America/New_York'
+  alarmEnabled: boolean; // 闹钟是否启用
+  alarmTime: string; // 闹钟时间，格式 HH:mm
+  countdownEnabled: boolean; // 倒计时是否启用
+  countdownMinutes: number; // 倒计时分钟数
 }
 
 const DEFAULT_SETTINGS: ClockSettings = {
@@ -39,6 +45,12 @@ const DEFAULT_SETTINGS: ClockSettings = {
   calibrationOffset: 0,
   lineHeight: 100,
   letterSpacing: 0,
+  animationSpeed: 0.5,
+  timezone: 'Asia/Shanghai',
+  alarmEnabled: false,
+  alarmTime: '08:00',
+  countdownEnabled: false,
+  countdownMinutes: 5,
 };
 
 const STORAGE_KEY = 'advanced-clock-settings';
@@ -50,6 +62,8 @@ interface ClockContextType {
   toggleFullscreen: () => void;
   showCalibration: boolean;
   setShowCalibration: (v: boolean) => void;
+  showAlarmCountdown: boolean;
+  setShowAlarmCountdown: (v: boolean) => void;
   exportConfig: () => void;
   importConfig: (file: File) => Promise<void>;
   applyTheme: (theme: 'cyberpunk' | 'minimal' | 'retro') => void;
@@ -71,6 +85,7 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCalibration, setShowCalibration] = useState(false);
+  const [showAlarmCountdown, setShowAlarmCountdown] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Auto-save settings with debounce
@@ -164,6 +179,8 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       toggleFullscreen,
       showCalibration,
       setShowCalibration,
+      showAlarmCountdown,
+      setShowAlarmCountdown,
       exportConfig,
       importConfig,
       applyTheme,

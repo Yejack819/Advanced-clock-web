@@ -17,18 +17,21 @@ function padTwo(n: number): string {
 
 export default function ClockDisplay() {
   const { settings } = useClock();
-  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing } = settings;
+  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, timezone } = settings;
 
   const getTimeNow = () => {
     const now = new Date(Date.now() + calibrationOffset);
+    const localTime = timezone && timezone !== 'local' 
+      ? new Date(now.toLocaleString('en-US', { timeZone: timezone }))
+      : now;
     return {
-      hours: padTwo(now.getHours()),
-      minutes: padTwo(now.getMinutes()),
-      seconds: hideSeconds ? '00' : padTwo(now.getSeconds()),
-      year: now.getFullYear(),
-      month: padTwo(now.getMonth() + 1),
-      day: padTwo(now.getDate()),
-      weekday: now.getDay(),
+      hours: padTwo(localTime.getHours()),
+      minutes: padTwo(localTime.getMinutes()),
+      seconds: hideSeconds ? '00' : padTwo(localTime.getSeconds()),
+      year: localTime.getFullYear(),
+      month: padTwo(localTime.getMonth() + 1),
+      day: padTwo(localTime.getDate()),
+      weekday: localTime.getDay(),
     };
   };
 
@@ -44,7 +47,7 @@ export default function ClockDisplay() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [calibrationOffset, hideSeconds, showDate]);
+  }, [calibrationOffset, hideSeconds, showDate, timezone]);
 
   const dateFontSize = fontSize / 3;
   const digitHeight = fontSize * 1.15;
@@ -80,15 +83,15 @@ export default function ClockDisplay() {
       {/* Time display */}
       <div className="flex items-center" style={{ height: `${digitHeight * (lineHeight / 100)}px`, lineHeight: `${lineHeight}%` }}>
         {/* Hours */}
-        <DigitRoller digit={time.hours[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} />
-        <DigitRoller digit={time.hours[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} />
+        <DigitRoller digit={time.hours[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} animationSpeed={animationSpeed} />
+        <DigitRoller digit={time.hours[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} animationSpeed={animationSpeed} />
 
         {/* Colon 1 */}
         <ColonDots fontSize={fontSize} color={fontColor} height={digitHeight * (lineHeight / 100)} />
 
         {/* Minutes */}
-        <DigitRoller digit={time.minutes[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} />
-        <DigitRoller digit={time.minutes[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} />
+        <DigitRoller digit={time.minutes[0]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} animationSpeed={animationSpeed} />
+        <DigitRoller digit={time.minutes[1]} fontSize={fontSize} fontFamily={fontFamily} color={fontColor} letterSpacing={letterSpacing} lineHeight={lineHeight} animationSpeed={animationSpeed} />
 
         {/* Colon 2 */}
         <ColonDots fontSize={fontSize} color={fontColor} height={digitHeight * (lineHeight / 100)} />
@@ -102,6 +105,7 @@ export default function ClockDisplay() {
           animate={!hideSeconds}
           letterSpacing={letterSpacing}
           lineHeight={lineHeight}
+          animationSpeed={animationSpeed}
         />
         <DigitRoller
           digit={time.seconds[1]}
@@ -111,6 +115,7 @@ export default function ClockDisplay() {
           animate={!hideSeconds}
           letterSpacing={letterSpacing}
           lineHeight={lineHeight}
+          animationSpeed={animationSpeed}
         />
       </div>
     </div>
