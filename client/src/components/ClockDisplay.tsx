@@ -80,20 +80,79 @@ export default function ClockDisplay() {
         </div>
       )}
 
-      {/* Countdown display (small) */}
+      {/* Countdown display (small) with animation */}
       {countdownRemaining > 0 && (
-        <div
-          style={{
-            fontSize: `${fontSize * 0.25}px`,
-            color: fontColor,
-            opacity: 0.6,
-            marginBottom: `${fontSize * 0.1}px`,
-            fontFamily: fontFamily,
-            fontWeight: 600,
-            letterSpacing: '0.05em',
-          }}
-        >
-          {Math.floor(countdownRemaining / 60).toString().padStart(2, '0')}:{(countdownRemaining % 60).toString().padStart(2, '0')}
+        <div className="flex items-center" style={{ marginBottom: `${fontSize * 0.1}px` }}>
+          {/* Countdown minutes */}
+          <DigitRoller
+            digit={Math.floor(countdownRemaining / 60).toString().padStart(2, '0')[0]}
+            fontSize={fontSize * 0.25}
+            fontFamily={fontFamily}
+            color={fontColor}
+            letterSpacing={letterSpacing * 0.25}
+            lineHeight={lineHeight}
+            animationSpeed={animationSpeed}
+          />
+          <DigitRoller
+            digit={Math.floor(countdownRemaining / 60).toString().padStart(2, '0')[1]}
+            fontSize={fontSize * 0.25}
+            fontFamily={fontFamily}
+            color={fontColor}
+            letterSpacing={letterSpacing * 0.25}
+            lineHeight={lineHeight}
+            animationSpeed={animationSpeed}
+          />
+          {/* Colon */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: `${fontSize * 0.25 * 0.22}px`,
+              height: `${fontSize * 0.25 * 1.15 * (lineHeight / 100)}px`,
+              padding: `0 ${fontSize * 0.25 * 0.08}px`,
+              userSelect: 'none',
+            }}
+          >
+            <div
+              style={{
+                width: `${Math.max(fontSize * 0.25 * 0.08, 4)}px`,
+                height: `${Math.max(fontSize * 0.25 * 0.08, 4)}px`,
+                borderRadius: '50%',
+                backgroundColor: fontColor,
+                opacity: 0.6,
+              }}
+            />
+            <div
+              style={{
+                width: `${Math.max(fontSize * 0.25 * 0.08, 4)}px`,
+                height: `${Math.max(fontSize * 0.25 * 0.08, 4)}px`,
+                borderRadius: '50%',
+                backgroundColor: fontColor,
+                opacity: 0.6,
+              }}
+            />
+          </div>
+          {/* Countdown seconds */}
+          <DigitRoller
+            digit={(countdownRemaining % 60).toString().padStart(2, '0')[0]}
+            fontSize={fontSize * 0.25}
+            fontFamily={fontFamily}
+            color={fontColor}
+            letterSpacing={letterSpacing * 0.25}
+            lineHeight={lineHeight}
+            animationSpeed={animationSpeed}
+          />
+          <DigitRoller
+            digit={(countdownRemaining % 60).toString().padStart(2, '0')[1]}
+            fontSize={fontSize * 0.25}
+            fontFamily={fontFamily}
+            color={fontColor}
+            letterSpacing={letterSpacing * 0.25}
+            lineHeight={lineHeight}
+            animationSpeed={animationSpeed}
+          />
         </div>
       )}
 
