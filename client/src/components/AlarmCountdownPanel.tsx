@@ -13,7 +13,9 @@ import { X, Bell, Timer, Play, Pause, RotateCcw } from 'lucide-react';
 export default function AlarmCountdownPanel() {
   const { settings, updateSettings, setShowAlarmCountdown, countdownRemaining, countdownRunning, startCountdown, pauseCountdown, resetCountdown } = useClock();
   const [activeTab, setActiveTab] = useState<'alarm' | 'countdown'>('alarm');
+  const [countdownHours, setCountdownHours] = useState(0);
   const [countdownMinutes, setCountdownMinutes] = useState(settings.countdownMinutes || 5);
+  const [countdownSeconds, setCountdownSeconds] = useState(0);
   const prevCountdownRunningRef = useRef(countdownRunning);
   const hasAlertedRef = useRef(false);
 
@@ -72,7 +74,10 @@ export default function AlarmCountdownPanel() {
 
   const handleStartCountdown = () => {
     hasAlertedRef.current = false;
-    startCountdown(countdownMinutes);
+    // Convert hours, minutes, seconds to total minutes
+    const totalSeconds = countdownHours * 3600 + countdownMinutes * 60 + countdownSeconds;
+    const totalMinutes = totalSeconds / 60;
+    startCountdown(totalMinutes);
   };
 
 
@@ -193,18 +198,44 @@ export default function AlarmCountdownPanel() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Countdown minutes */}
-              <div className="space-y-2">
-                <label className="text-sm text-white/70">倒计时分钟数</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="999"
-                  value={countdownMinutes}
-                  onChange={e => setCountdownMinutes(Number(e.target.value))}
-                  className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-3 text-white/90 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors"
-                  disabled={countdownRunning}
-                />
+              {/* Countdown time inputs */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="space-y-2">
+                  <label className="text-sm text-white/70">时</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="23"
+                    value={countdownHours}
+                    onChange={e => setCountdownHours(Math.max(0, Math.min(23, Number(e.target.value))))}
+                    className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-white/90 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors text-center"
+                    disabled={countdownRunning}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-white/70">分</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={countdownMinutes}
+                    onChange={e => setCountdownMinutes(Math.max(0, Math.min(59, Number(e.target.value))))}
+                    className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-white/90 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors text-center"
+                    disabled={countdownRunning}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm text-white/70">秒</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={countdownSeconds}
+                    onChange={e => setCountdownSeconds(Math.max(0, Math.min(59, Number(e.target.value))))}
+                    className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-white/90 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors text-center"
+                    disabled={countdownRunning}
+                  />
+                </div>
               </div>
 
               {/* Countdown display */}
