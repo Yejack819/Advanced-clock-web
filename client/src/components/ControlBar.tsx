@@ -4,7 +4,7 @@
  * 设计哲学：暗黑机械美学
  * - 毛玻璃效果背景
  * - 全屏模式下隐藏
- * - 包含：字号调节、字体选择、颜色选择、隐藏秒、显示日期、全屏、校准、高度、间距
+ * - 包含：字号调节、字体选择、颜色选择、隐藏秒、显示日期、全屏、校准、间距
  * - 默认展开，可折叠
  * - 按钮点击动画反馈
  */
@@ -68,7 +68,7 @@ export default function ControlBar() {
       <div
         className="transition-all duration-400 overflow-hidden"
         style={{
-          maxHeight: expanded ? '600px' : '0px',
+          maxHeight: expanded ? '700px' : '0px',
           background: 'rgba(14, 14, 14, 0.95)',
           backdropFilter: 'blur(30px)',
           borderTop: expanded ? '1px solid rgba(255,255,255,0.06)' : 'none',
@@ -232,8 +232,42 @@ export default function ControlBar() {
                   checked={settings.showDate}
                   onChange={v => updateSettings({ showDate: v })}
                 />
+                <ToggleOption
+                  icon={<Calendar size={13} />}
+                  label="显示日期倒计时"
+                  checked={settings.showDateCountdown}
+                  onChange={v => updateSettings({ showDateCountdown: v })}
+                />
               </div>
             </ControlGroup>
+
+            {/* Date Countdown Settings */}
+            {settings.showDateCountdown && (
+              <ControlGroup icon={<Calendar size={14} />} label="日期倒计时">
+                <div className="flex flex-col gap-3">
+                  <div>
+                    <label className="text-xs text-white/50 block mb-1">标签（最多4个汉字）</label>
+                    <input
+                      type="text"
+                      value={settings.dateCountdownLabel}
+                      onChange={e => updateSettings({ dateCountdownLabel: e.target.value.slice(0, 4) })}
+                      maxLength={4}
+                      className="w-full bg-white/5 border border-white/8 rounded-md px-3 py-1.5 text-sm text-white outline-none focus:border-blue-500/40 transition-colors"
+                      placeholder="例：新年"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs text-white/50 block mb-1">目标日期</label>
+                    <input
+                      type="date"
+                      value={settings.dateCountdownTarget}
+                      onChange={e => updateSettings({ dateCountdownTarget: e.target.value })}
+                      className="w-full bg-white/5 border border-white/8 rounded-md px-3 py-1.5 text-sm text-white outline-none focus:border-blue-500/40 transition-colors"
+                    />
+                  </div>
+                </div>
+              </ControlGroup>
+            )}
 
             {/* Actions */}
             <ControlGroup icon={<Maximize size={14} />} label="操作">
@@ -296,17 +330,8 @@ export default function ControlBar() {
                   ref={fileInputRef}
                   type="file"
                   accept=".json"
+                  onChange={(e) => { const file = e.currentTarget.files?.[0]; if (file) importConfig(file); }}
                   style={{ display: 'none' }}
-                  onChange={async (e) => {
-                    const file = e.currentTarget.files?.[0];
-                    if (file) {
-                      try {
-                        await importConfig(file);
-                      } catch (err) {
-                        console.error('Import failed:', err);
-                      }
-                    }
-                  }}
                 />
               </div>
             </ControlGroup>
@@ -318,90 +343,49 @@ export default function ControlBar() {
   );
 }
 
+// Helper Components
 function ControlGroup({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-2.5">
-      <div className="flex items-center gap-1.5 text-[11px] text-white/30 uppercase tracking-widest font-medium">
-        {icon}
-        {label}
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <span className="text-white/40">{icon}</span>
+        <label className="text-xs font-medium text-white/60 uppercase tracking-wider">{label}</label>
       </div>
-      {children}
+      <div className="pl-6">{children}</div>
     </div>
   );
 }
 
-function ToggleOption({ icon, label, checked, onChange }: {
-  icon: React.ReactNode;
-  label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
-}) {
-  const [isPressed, setIsPressed] = useState(false);
-
+function ToggleOption({ icon, label, checked, onChange }: { icon: React.ReactNode; label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
     <button
-      className="flex items-center gap-2.5 group transition-transform duration-150 active:scale-95"
       onClick={() => onChange(!checked)}
-      onMouseDown={() => setIsPressed(true)}
-      onMouseUp={() => setIsPressed(false)}
-      onMouseLeave={() => setIsPressed(false)}
+      className="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 hover:bg-white/5 active:scale-95"
+      style={{
+        background: checked ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255,255,255,0.03)',
+        border: checked ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255,255,255,0.08)',
+        color: checked ? 'rgba(59, 130, 246, 0.8)' : 'rgba(255,255,255,0.5)',
+      }}
     >
-      <div
-        className="relative w-9 h-[20px] rounded-full transition-all duration-200 shrink-0"
-        style={{
-          background: isPressed
-            ? (checked ? 'rgba(59, 130, 246, 0.4)' : 'rgba(255,255,255,0.12)')
-            : (checked ? '#3b82f6' : 'rgba(255,255,255,0.08)'),
-          boxShadow: isPressed ? 'inset 0 2px 4px rgba(0,0,0,0.3)' : 'none',
-        }}
-      >
-        <div
-          className="absolute top-[2px] w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200"
-          style={{
-            transform: checked ? 'translateX(18px)' : 'translateX(2px)',
-          }}
-        />
-      </div>
-      <span className="flex items-center gap-1.5 text-sm text-white/50 group-hover:text-white/70 transition-colors">
-        {icon}
-        {label}
-      </span>
+      <span>{icon}</span>
+      <span className="text-sm">{label}</span>
     </button>
   );
 }
 
-function ActionButton({ icon, label, onClick, active }: {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  active?: boolean;
-}) {
-  const [isPressed, setIsPressed] = useState(false);
-
-  const handleMouseDown = () => setIsPressed(true);
-  const handleMouseUp = () => setIsPressed(false);
-  const handleMouseLeave = () => setIsPressed(false);
-
+function ActionButton({ icon, label, onClick, active }: { icon: React.ReactNode; label: string; onClick: () => void; active?: boolean }) {
   return (
     <button
       onClick={onClick}
-      onMouseDown={handleMouseDown}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
-      className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-all duration-150 active:scale-95"
+      className="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 hover:bg-white/5 active:scale-95"
       style={{
-        background: isPressed
-          ? (active ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.08)')
-          : (active ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.04)'),
-        border: active ? '1px solid rgba(59,130,246,0.3)' : '1px solid rgba(255,255,255,0.06)',
-        color: active ? 'rgba(59,130,246,0.9)' : 'rgba(255,255,255,0.5)',
-        boxShadow: isPressed
-          ? (active ? 'inset 0 2px 4px rgba(59,130,246,0.2)' : 'inset 0 2px 4px rgba(0,0,0,0.3)')
-          : 'none',
+        background: active ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255,255,255,0.03)',
+        border: active ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255,255,255,0.08)',
+        color: active ? 'rgba(59, 130, 246, 0.8)' : 'rgba(255,255,255,0.5)',
       }}
     >
-      {icon}
-      {label}
+      <span>{icon}</span>
+      <span className="text-sm">{label}</span>
     </button>
   );
 }

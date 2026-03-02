@@ -17,7 +17,20 @@ function padTwo(n: number): string {
 
 export default function ClockDisplay() {
   const { settings, countdownRemaining, countdownRunning } = useClock();
-  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, timezone } = settings;
+  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, timezone, showDateCountdown, dateCountdownLabel, dateCountdownTarget } = settings;
+
+  // Calculate days until target date
+  const calculateDaysUntil = () => {
+    if (!showDateCountdown || !dateCountdownTarget) return 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const target = new Date(dateCountdownTarget);
+    target.setHours(0, 0, 0, 0);
+    const diff = target.getTime() - today.getTime();
+    return Math.ceil(diff / (1000 * 60 * 60 * 24));
+  };
+
+  const daysUntil = calculateDaysUntil();
 
   const getTimeNow = () => {
     const now = new Date(Date.now() + calibrationOffset);
@@ -61,6 +74,25 @@ export default function ClockDisplay() {
         '--clock-bg': bgColor,
       } as React.CSSProperties}
     >
+      {/* Date countdown display */}
+      {showDateCountdown && daysUntil >= 0 && (
+        <div
+          className="transition-all duration-300 flex items-center"
+          style={{
+            fontFamily: "'Noto Sans SC', system-ui, sans-serif",
+            fontSize: `${dateFontSize}px`,
+            color: fontColor,
+            height: `${dateFontSize}px`,
+            marginBottom: `${fontSize * 0.08}px`,
+            letterSpacing: '0.05em',
+            opacity: 0.6,
+            fontWeight: 300,
+          }}
+        >
+          距离{dateCountdownLabel}还有{daysUntil}天
+        </div>
+      )}
+
       {/* Date display */}
       {showDate && (
         <div

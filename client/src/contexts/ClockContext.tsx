@@ -33,6 +33,9 @@ export interface ClockSettings {
   alarmTime: string; // 闹钟时间，格式 HH:mm
   countdownEnabled: boolean; // 倒计时是否启用
   countdownMinutes: number; // 倒计时分钟数
+  showDateCountdown: boolean; // 是否显示日期倒计时
+  dateCountdownLabel: string; // 日期倒计时标签，最多4个汉字
+  dateCountdownTarget: string; // 日期倒计时目标日期，格式 YYYY-MM-DD
 }
 
 const DEFAULT_SETTINGS: ClockSettings = {
@@ -51,6 +54,9 @@ const DEFAULT_SETTINGS: ClockSettings = {
   alarmTime: '08:00',
   countdownEnabled: false,
   countdownMinutes: 5,
+  showDateCountdown: false,
+  dateCountdownLabel: '新年',
+  dateCountdownTarget: '2027-01-01',
 };
 
 const STORAGE_KEY = 'advanced-clock-settings';
