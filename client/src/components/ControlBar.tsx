@@ -11,7 +11,7 @@
  */
 import React, { useState } from 'react';
 import { useClock, FONT_OPTIONS } from '@/contexts/ClockContext';
-import { t } from '@/lib/i18n';
+import { t, getThemeName } from '@/lib/i18n';
 import {
   Maximize,
   Minimize,
@@ -407,19 +407,19 @@ export default function ControlBar() {
               <div className="flex flex-col gap-2">
                 <ActionButton
                   icon={<span>🤖</span>}
-                  label={t(settings.language, 'cyberpunk')}
+                  label={getThemeName(settings.language, 'cyberpunk')}
                   onClick={() => applyTheme('cyberpunk')}
                   isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<span>⚪</span>}
-                  label={t(settings.language, 'minimal')}
+                  label={getThemeName(settings.language, 'minimal')}
                   onClick={() => applyTheme('minimal')}
                   isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<span>💚</span>}
-                  label={t(settings.language, 'retro')}
+                  label={getThemeName(settings.language, 'retro')}
                   onClick={() => applyTheme('retro')}
                   isLightBackground={isLightBackground}
                 />

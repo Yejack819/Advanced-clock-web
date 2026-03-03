@@ -29,9 +29,9 @@ export const translations = {
     'calibration': '时间校准',
     'alarmCountdown': '闹钟/倒计时',
     'themes': '主题预设',
-    'cyberpunk': '赛博朋克',
-    'minimal': '极简白',
-    'retro': '复古绿屏',
+    'themesCyberpunk': '赛博朋克',
+    'themesMinimal': '极简白',
+    'themesRetro': '复古绿屏',
     'config': '配置',
     'exportConfig': '导出配置',
     'importConfig': '导入配置',
@@ -75,9 +75,9 @@ export const translations = {
     'calibration': 'Time Calibration',
     'alarmCountdown': 'Alarm/Countdown',
     'themes': 'Themes',
-    'cyberpunk': 'Cyberpunk',
-    'minimal': 'Minimal',
-    'retro': 'Retro',
+    'themesCyberpunk': 'Cyberpunk',
+    'themesMinimal': 'Minimal',
+    'themesRetro': 'Retro',
     'config': 'Config',
     'exportConfig': 'Export Config',
     'importConfig': 'Import Config',
@@ -138,4 +138,14 @@ export function formatDate(language: Language, year: number, month: number, day:
 // 获取倒计时文本
 export function formatCountdown(language: Language, days: number, label: string): string {
   return countdownFormats[language](days, label);
+}
+
+// 获取主题名称翻译
+export function getThemeName(language: Language, themeId: string): string {
+  const themeMap: Record<string, string> = {
+    'cyberpunk': t(language, 'themesCyberpunk'),
+    'minimal': t(language, 'themesMinimal'),
+    'retro': t(language, 'themesRetro'),
+  };
+  return themeMap[themeId] || themeId;
 }
