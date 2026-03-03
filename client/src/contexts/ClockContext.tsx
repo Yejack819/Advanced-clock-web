@@ -36,6 +36,7 @@ export interface ClockSettings {
   showDateCountdown: boolean; // 是否显示日期倒计时
   dateCountdownLabel: string; // 日期倒计时标签，最多4个汉字
   dateCountdownTarget: string; // 日期倒计时目标日期，格式 YYYY-MM-DD
+  language: 'zh' | 'en'; // 语言设置：中文或英文
 }
 
 const DEFAULT_SETTINGS: ClockSettings = {
@@ -57,6 +58,7 @@ const DEFAULT_SETTINGS: ClockSettings = {
   showDateCountdown: false,
   dateCountdownLabel: '新年',
   dateCountdownTarget: '2027-01-01',
+  language: 'zh',
 };
 
 const STORAGE_KEY = 'advanced-clock-settings';

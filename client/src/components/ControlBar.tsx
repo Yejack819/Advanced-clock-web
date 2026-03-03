@@ -27,6 +27,7 @@ import {
   Upload,
   Palette as PaletteIcon,
   Bell,
+  Globe,
 } from 'lucide-react';
 
 export default function ControlBar() {
@@ -412,6 +413,34 @@ export default function ControlBar() {
                   onClick={() => applyTheme('retro')}
                   isLightBackground={isLightBackground}
                 />
+              </div>
+            </ControlGroup>
+
+            {/* Language */}
+            <ControlGroup icon={<Globe size={14} />} label="语言" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => updateSettings({ language: 'zh' })}
+                  className="flex-1 px-3 py-1.5 rounded-md text-sm transition-all duration-200 active:scale-95"
+                  style={{
+                    background: settings.language === 'zh' ? 'rgba(59, 130, 246, 0.15)' : (isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
+                    border: settings.language === 'zh' ? '1px solid rgba(59, 130, 246, 0.3)' : (isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
+                    color: settings.language === 'zh' ? 'rgba(59, 130, 246, 0.8)' : (isLightBackground ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
+                  }}
+                >
+                  中文
+                </button>
+                <button
+                  onClick={() => updateSettings({ language: 'en' })}
+                  className="flex-1 px-3 py-1.5 rounded-md text-sm transition-all duration-200 active:scale-95"
+                  style={{
+                    background: settings.language === 'en' ? 'rgba(59, 130, 246, 0.15)' : (isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
+                    border: settings.language === 'en' ? '1px solid rgba(59, 130, 246, 0.3)' : (isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
+                    color: settings.language === 'en' ? 'rgba(59, 130, 246, 0.8)' : (isLightBackground ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
+                  }}
+                >
+                  English
+                </button>
               </div>
             </ControlGroup>
 

@@ -6,6 +6,7 @@
  * - 冒号使用两个圆点代替文字冒号，带呼吸闪烁
  * - 日期显示为时钟字号的 1/3
  * - 支持隐藏秒（秒固定00但时分仍刷新动画）
+ * - 支持中文和英文显示
  */
 import { useEffect, useState, useRef } from 'react';
 import { useClock } from '@/contexts/ClockContext';
@@ -15,9 +16,13 @@ function padTwo(n: number): string {
   return n.toString().padStart(2, '0');
 }
 
+const WEEKDAYS_ZH = ['日', '一', '二', '三', '四', '五', '六'];
+const WEEKDAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
 export default function ClockDisplay() {
   const { settings, countdownRemaining, countdownRunning } = useClock();
-  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, timezone, showDateCountdown, dateCountdownLabel, dateCountdownTarget } = settings;
+  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, timezone, showDateCountdown, dateCountdownLabel, dateCountdownTarget, language } = settings;
 
   // Calculate days until target date
   const calculateDaysUntil = () => {
@@ -45,6 +50,7 @@ export default function ClockDisplay() {
       month: padTwo(localTime.getMonth() + 1),
       day: padTwo(localTime.getDate()),
       weekday: localTime.getDay(),
+      monthIndex: localTime.getMonth(),
     };
   };
 
@@ -65,7 +71,33 @@ export default function ClockDisplay() {
   const dateFontSize = fontSize / 3;
   const digitHeight = fontSize * 1.15;
   const dateHeight = digitHeight * (lineHeight / 100);
-  const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+
+  // Get date display text based on language
+  const getDateDisplayText = () => {
+    if (language === 'en') {
+      return `${MONTHS_EN[time.monthIndex]} ${time.day}, ${time.year} ${WEEKDAYS_EN[time.weekday]}`;
+    } else {
+      return `${time.year}年${time.month}月${time.day}日 星期${WEEKDAYS_ZH[time.weekday]}`;
+    }
+  };
+
+  // Get countdown text based on language
+  const getCountdownText = () => {
+    if (language === 'en') {
+      return `${daysUntil} days until ${dateCountdownLabel}`;
+    } else {
+      return `距离${dateCountdownLabel}还有${daysUntil}天`;
+    }
+  };
+
+  // Get date font family based on language
+  const getDateFontFamily = () => {
+    if (language === 'en') {
+      return fontFamily; // Use the selected font for English
+    } else {
+      return "'Noto Sans SC', system-ui, sans-serif"; // Use Noto Sans SC for Chinese
+    }
+  };
 
   return (
     <div
@@ -79,7 +111,7 @@ export default function ClockDisplay() {
         <div
           className="transition-all duration-300 flex items-center"
           style={{
-            fontFamily: "'Noto Sans SC', system-ui, sans-serif",
+            fontFamily: getDateFontFamily(),
             fontSize: `${dateFontSize}px`,
             color: fontColor,
             height: `${dateFontSize}px`,
@@ -89,7 +121,7 @@ export default function ClockDisplay() {
             fontWeight: 300,
           }}
         >
-          距离{dateCountdownLabel}还有{daysUntil}天
+          {getCountdownText()}
         </div>
       )}
 
@@ -98,7 +130,7 @@ export default function ClockDisplay() {
         <div
           className="transition-all duration-300 flex items-center"
           style={{
-            fontFamily: "'Noto Sans SC', system-ui, sans-serif",
+            fontFamily: getDateFontFamily(),
             fontSize: `${dateFontSize}px`,
             color: fontColor,
             height: `${dateFontSize}px`,
@@ -108,7 +140,7 @@ export default function ClockDisplay() {
             fontWeight: 300,
           }}
         >
-          {time.year}年{time.month}月{time.day}日 星期{weekdays[time.weekday]}
+          {getDateDisplayText()}
         </div>
       )}
 

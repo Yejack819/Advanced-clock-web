@@ -93,7 +93,7 @@ function ClockPage() {
           className="fixed bottom-4 left-1/2 -translate-x-1/2 text-white/20 text-xs transition-opacity duration-1000 opacity-0 hover:opacity-100"
           style={{ fontFamily: 'system-ui' }}
         >
-          按 ESC 退出全屏 | F 全屏 | C 校准 | S 隐藏秒
+          {settings.language === 'en' ? 'Press ESC to exit fullscreen | F fullscreen | C calibrate | S hide seconds' : '按 ESC 退出全屏 | F 全屏 | C 校准 | S 隐藏秒'}
         </div>
       )}
 
@@ -103,7 +103,7 @@ function ClockPage() {
           className="fixed top-4 right-4 text-white/10 text-xs transition-opacity duration-300 hover:text-white/30"
           style={{ fontFamily: 'system-ui' }}
         >
-          快捷键: F(全屏) C(校准) S(隐藏秒)
+          {settings.language === 'en' ? 'Shortcuts: F(fullscreen) C(calibrate) S(hide seconds)' : '快捷键: F(全屏) C(校准) S(隐藏秒)'}
         </div>
       )}
     </div>
