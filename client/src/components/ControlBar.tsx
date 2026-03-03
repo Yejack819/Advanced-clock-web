@@ -33,6 +33,69 @@ export default function ControlBar() {
   const { settings, updateSettings, isFullscreen, toggleFullscreen, setShowCalibration, showCalibration, setShowAlarmCountdown, showAlarmCountdown, exportConfig, importConfig, applyTheme } = useClock();
   const [expanded, setExpanded] = useState(true);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  
+  // 检测背景颜色亮度
+  const isLightBackground = React.useMemo(() => {
+    const bgColor = settings.bgColor;
+    // 将十六进制颜色转换为RGB
+    const r = parseInt(bgColor.slice(1, 3), 16);
+    const g = parseInt(bgColor.slice(3, 5), 16);
+    const b = parseInt(bgColor.slice(5, 7), 16);
+    // 计算亮度（使用标准公式）
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128; // 亮度大于128认为是浅色背景
+  }, [settings.bgColor]);
+  
+  // 根据背景亮度动态生成样式
+  const getControlBarStyle = () => {
+    if (isLightBackground) {
+      // 浅色背景：使用深色半透明
+      return {
+        toggleButton: {
+          background: 'rgba(0, 0, 0, 0.08)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          border: '1px solid rgba(0,0,0,0.15)',
+          borderBottom: 'none',
+          color: 'rgba(0,0,0,0.6)',
+        },
+        panel: {
+          background: 'rgba(0, 0, 0, 0.1)',
+          backdropFilter: 'blur(30px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(30px) saturate(200%)',
+          borderTop: 'rgba(0,0,0,0.2)',
+          textColor: 'rgba(0,0,0,0.7)',
+          labelColor: 'rgba(0,0,0,0.6)',
+          iconColor: 'rgba(0,0,0,0.4)',
+        },
+      };
+    } else {
+      // 深色背景：使用浅色半透明
+      return {
+        toggleButton: {
+          background: 'rgba(255, 255, 255, 0.08)',
+          backdropFilter: 'blur(20px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+          border: '1px solid rgba(255,255,255,0.15)',
+          borderBottom: 'none',
+          color: 'rgba(255,255,255,0.6)',
+        },
+        panel: {
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(30px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(30px) saturate(200%)',
+          borderTop: 'rgba(255,255,255,0.2)',
+          textColor: 'rgba(255,255,255,0.7)',
+          labelColor: 'rgba(255,255,255,0.6)',
+          iconColor: 'rgba(255,255,255,0.4)',
+        },
+      };
+    }
+  };
+  
+  const styles = getControlBarStyle();
+  const buttonStyle = styles.toggleButton;
+  const panelStyle = styles.panel;
 
   return (
     <div className="control-bar fixed bottom-0 left-0 right-0 z-50">
@@ -42,12 +105,12 @@ export default function ControlBar() {
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-1.5 px-5 py-1.5 rounded-t-lg transition-all duration-200 hover:bg-white/10 active:scale-95"
           style={{
-            background: 'rgba(255, 255, 255, 0.08)',
-            backdropFilter: 'blur(20px) saturate(180%)',
-            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-            border: '1px solid rgba(255,255,255,0.15)',
+            background: buttonStyle.background,
+            backdropFilter: buttonStyle.backdropFilter,
+            WebkitBackdropFilter: buttonStyle.WebkitBackdropFilter,
+            border: buttonStyle.border,
             borderBottom: 'none',
-            color: 'rgba(255,255,255,0.6)',
+            color: buttonStyle.color,
             fontSize: '12px',
           }}
         >
@@ -70,17 +133,17 @@ export default function ControlBar() {
         className="transition-all duration-400 overflow-hidden"
         style={{
           maxHeight: expanded ? '700px' : '0px',
-          background: 'rgba(255, 255, 255, 0.1)',
-          backdropFilter: 'blur(30px) saturate(200%)',
-          WebkitBackdropFilter: 'blur(30px) saturate(200%)',
-          borderTop: expanded ? '1px solid rgba(255,255,255,0.2)' : 'none',
+          background: panelStyle.background,
+          backdropFilter: panelStyle.backdropFilter,
+          WebkitBackdropFilter: panelStyle.WebkitBackdropFilter,
+          borderTop: expanded ? `1px solid ${panelStyle.borderTop}` : 'none',
         }}
       >
         <div className="px-3 pt-3 pb-4 md:px-5 md:pt-3 md:pb-5 max-w-6xl mx-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
 
             {/* Font Size */}
-            <ControlGroup icon={<Type size={14} />} label="数字大小">
+            <ControlGroup icon={<Type size={14} />} label="数字大小" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex items-center gap-3">
                 <input
                   type="range"
@@ -102,7 +165,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Animation Speed (动画速度) */}
-            <ControlGroup icon={<Clock size={14} />} label="动画速度">
+            <ControlGroup icon={<Clock size={14} />} label="动画速度" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex items-center gap-3">
                 <input
                   type="range"
@@ -124,7 +187,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Letter Spacing (数字间距) */}
-            <ControlGroup icon={<Maximize2 size={14} />} label="数字间距">
+            <ControlGroup icon={<Maximize2 size={14} />} label="数字间距" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex items-center gap-3">
                 <input
                   type="range"
@@ -146,7 +209,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Timezone */}
-            <ControlGroup icon={<Clock size={14} />} label="时区">
+            <ControlGroup icon={<Clock size={14} />} label="时区" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <select
                 value={settings.timezone}
                 onChange={e => updateSettings({ timezone: e.target.value })}
@@ -164,7 +227,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Font Family */}
-            <ControlGroup icon={<Type size={14} />} label="字体">
+            <ControlGroup icon={<Type size={14} />} label="字体" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <select
                 value={settings.fontFamily}
                 onChange={e => updateSettings({ fontFamily: e.target.value })}
@@ -180,7 +243,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Font Color */}
-            <ControlGroup icon={<Palette size={14} />} label="字体颜色">
+            <ControlGroup icon={<Palette size={14} />} label="字体颜色" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <input
@@ -200,7 +263,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Background Color */}
-            <ControlGroup icon={<Palette size={14} />} label="背景颜色">
+            <ControlGroup icon={<Palette size={14} />} label="背景颜色" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <input
@@ -220,7 +283,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Toggle Options */}
-            <ControlGroup icon={<Eye size={14} />} label="显示选项">
+            <ControlGroup icon={<Eye size={14} />} label="显示选项" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex flex-col gap-3">
                 <ToggleOption
                   icon={settings.hideSeconds ? <EyeOff size={13} /> : <Eye size={13} />}
@@ -245,7 +308,7 @@ export default function ControlBar() {
 
             {/* Date Countdown Settings */}
             {settings.showDateCountdown && (
-              <ControlGroup icon={<Calendar size={14} />} label="日期倒计时">
+              <ControlGroup icon={<Calendar size={14} />} label="日期倒计时" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
                 <div className="flex flex-col gap-3">
                   <div>
                     <label className="text-xs text-white/50 block mb-1">标签（最多4个汉字）</label>
@@ -272,7 +335,7 @@ export default function ControlBar() {
             )}
 
             {/* Actions */}
-            <ControlGroup icon={<Maximize size={14} />} label="操作">
+            <ControlGroup icon={<Maximize size={14} />} label="操作" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex flex-col gap-2">
                 <ActionButton
                   icon={isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
@@ -295,7 +358,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Themes */}
-            <ControlGroup icon={<PaletteIcon size={14} />} label="主题预设">
+            <ControlGroup icon={<PaletteIcon size={14} />} label="主题预设" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex flex-col gap-2">
                 <ActionButton
                   icon={<span>🤖</span>}
@@ -316,7 +379,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Config Management */}
-            <ControlGroup icon={<Download size={14} />} label="配置">
+            <ControlGroup icon={<Download size={14} />} label="配置" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex flex-col gap-2">
                 <ActionButton
                   icon={<Download size={14} />}
@@ -346,14 +409,14 @@ export default function ControlBar() {
 }
 
 // Helper Components
-function ControlGroup({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+function ControlGroup({ icon, label, children, textColor, labelColor, iconColor }: { icon: React.ReactNode; label: string; children: React.ReactNode; textColor?: string; labelColor?: string; iconColor?: string }) {
   return (
     <div className="flex flex-col gap-1.5">
       <div className="flex items-center gap-1.5">
-        <span className="text-white/40 flex-shrink-0">{icon}</span>
-        <label className="text-xs font-medium text-white/70 uppercase tracking-wider leading-tight">{label}</label>
+        <span className="flex-shrink-0" style={{ color: iconColor }}>{icon}</span>
+        <label className="text-xs font-medium uppercase tracking-wider leading-tight" style={{ color: labelColor }}>{label}</label>
       </div>
-      <div className="pl-5">{children}</div>
+      <div className="pl-5" style={{ color: textColor }}>{children}</div>
     </div>
   );
 }
