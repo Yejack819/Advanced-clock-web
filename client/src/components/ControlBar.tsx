@@ -450,14 +450,17 @@ function ControlGroup({ icon, label, children, textColor, labelColor, iconColor 
 }
 
 function ToggleOption({ icon, label, checked, onChange }: { icon: React.ReactNode; label: string; checked: boolean; onChange: (v: boolean) => void }) {
+  const bgColor = document.documentElement.style.getPropertyValue('--bg-color') || '#001100';
+  const isLight = bgColor.length > 0 && parseInt(bgColor.slice(1, 3), 16) * 299 + parseInt(bgColor.slice(3, 5), 16) * 587 + parseInt(bgColor.slice(5, 7), 16) * 114 > 128000;
+  
   return (
     <button
       onClick={() => onChange(!checked)}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-200 hover:bg-white/5 active:scale-95"
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-200 active:scale-95"
       style={{
-        background: checked ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255,255,255,0.03)',
-        border: checked ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255,255,255,0.08)',
-        color: checked ? 'rgba(59, 130, 246, 0.8)' : 'rgba(255,255,255,0.5)',
+        background: checked ? 'rgba(59, 130, 246, 0.15)' : (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
+        border: checked ? '1px solid rgba(59, 130, 246, 0.3)' : (isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
+        color: checked ? 'rgba(59, 130, 246, 0.8)' : (isLight ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
       }}
     >
       <span>{icon}</span>
@@ -467,14 +470,17 @@ function ToggleOption({ icon, label, checked, onChange }: { icon: React.ReactNod
 }
 
 function ActionButton({ icon, label, onClick, active }: { icon: React.ReactNode; label: string; onClick: () => void; active?: boolean }) {
+  const bgColor = document.documentElement.style.getPropertyValue('--bg-color') || '#001100';
+  const isLight = bgColor.length > 0 && parseInt(bgColor.slice(1, 3), 16) * 299 + parseInt(bgColor.slice(3, 5), 16) * 587 + parseInt(bgColor.slice(5, 7), 16) * 114 > 128000;
+  
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-200 hover:bg-white/5 active:scale-95"
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-200 active:scale-95"
       style={{
-        background: active ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255,255,255,0.03)',
-        border: active ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255,255,255,0.08)',
-        color: active ? 'rgba(59, 130, 246, 0.8)' : 'rgba(255,255,255,0.5)',
+        background: active ? 'rgba(59, 130, 246, 0.15)' : (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
+        border: active ? '1px solid rgba(59, 130, 246, 0.3)' : (isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
+        color: active ? 'rgba(59, 130, 246, 0.8)' : (isLight ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
       }}
     >
       <span>{icon}</span>
