@@ -11,8 +11,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useClock } from '@/contexts/ClockContext';
 import { t } from '@/lib/i18n';
-import { X, Bell, Timer, Play, Pause, RotateCcw, Volume2, Zap } from 'lucide-react';
-import { SOUND_OPTIONS, playSound, screenFlash } from '@/lib/soundManager';
+import { X, Bell, Timer, Play, Pause, RotateCcw, Volume2, Clock, Trash2 } from 'lucide-react';
+import { SOUND_OPTIONS, playSound } from '@/lib/soundManager';
+import { getCountdownHistory, addCountdownHistory, removeCountdownHistory, formatCountdownDuration } from '@/lib/countdownHistory';
 
 export default function AlarmCountdownPanel() {
   const { settings, updateSettings, setShowAlarmCountdown, countdownRemaining, countdownRunning, startCountdown, pauseCountdown, resetCountdown } = useClock();
@@ -20,8 +21,13 @@ export default function AlarmCountdownPanel() {
   const [countdownHours, setCountdownHours] = useState(0);
   const [countdownMinutes, setCountdownMinutes] = useState(settings.countdownMinutes || 5);
   const [countdownSeconds, setCountdownSeconds] = useState(0);
+  const [countdownHistory, setCountdownHistory] = useState(getCountdownHistory());
   const prevCountdownRunningRef = useRef(countdownRunning);
   const hasAlertedRef = useRef(false);
+
+  useEffect(() => {
+    setCountdownHistory(getCountdownHistory());
+  }, [countdownRunning]);
 
   // 检测背景颜色亮度
   const isLightBackground = (() => {
@@ -65,7 +71,7 @@ export default function AlarmCountdownPanel() {
     }
     
     prevCountdownRunningRef.current = countdownRunning;
-  }, [countdownRemaining, countdownRunning, settings.language, settings.countdownSound, settings.countdownScreenFlash]);
+  }, [countdownRemaining, countdownRunning, settings.language, settings.countdownSound]);
 
   const playAlarmSound = () => {
     // Simple beep using Web Audio API
@@ -88,19 +94,31 @@ export default function AlarmCountdownPanel() {
   const playCountdownFinishSound = () => {
     // Play the selected countdown sound
     playSound(settings.countdownSound, 1.5);
-    
-    // Optionally trigger screen flash
-    if (settings.countdownScreenFlash) {
-      screenFlash(settings.bgColor, 1.5, 5);
-    }
   };
 
   const handleStartCountdown = () => {
     hasAlertedRef.current = false;
-    // Convert hours, minutes, seconds to total minutes
     const totalSeconds = countdownHours * 3600 + countdownMinutes * 60 + countdownSeconds;
     const totalMinutes = totalSeconds / 60;
     startCountdown(totalMinutes);
+    addCountdownHistory(countdownHours, countdownMinutes, countdownSeconds);
+    setCountdownHistory(getCountdownHistory());
+  };
+
+  const handleQuickCountdown = (hours: number, minutes: number, seconds: number) => {
+    setCountdownHours(hours);
+    setCountdownMinutes(minutes);
+    setCountdownSeconds(seconds);
+    hasAlertedRef.current = false;
+    const totalMinutes = hours * 60 + minutes + seconds / 60;
+    startCountdown(totalMinutes);
+    addCountdownHistory(hours, minutes, seconds);
+    setCountdownHistory(getCountdownHistory());
+  };
+
+  const handleRemoveHistory = (id: string) => {
+    removeCountdownHistory(id);
+    setCountdownHistory(getCountdownHistory());
   };
 
   const handlePauseCountdown = () => {
@@ -442,27 +460,45 @@ export default function AlarmCountdownPanel() {
                   )}
                 </div>
 
-                {/* Screen Flash Toggle */}
-                <div className="flex items-center justify-between">
-                  <label className="text-sm flex items-center gap-2" style={{ color: styles.panel.labelColor }}>
-                    <Zap size={14} />
-                    {settings.language === 'zh' ? '屏幕闪烁' : 'Screen Flash'}
-                  </label>
-                  <button
-                    onClick={() => updateSettings({ countdownScreenFlash: !settings.countdownScreenFlash })}
-                    className="relative w-12 h-6 rounded-full transition-colors"
-                    style={{
-                      background: settings.countdownScreenFlash ? '#3b82f6' : (isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)'),
-                    }}
-                  >
-                    <div
-                      className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform"
-                      style={{
-                        transform: settings.countdownScreenFlash ? 'translateX(26px)' : 'translateX(2px)',
-                      }}
-                    />
-                  </button>
-                </div>
+                {/* Countdown History */}
+                {countdownHistory.length > 0 && (
+                  <div className="space-y-2 pt-4" style={{ borderTop: `1px solid ${styles.panel.borderBottom}` }}>
+                    <label className="text-sm flex items-center gap-2" style={{ color: styles.panel.labelColor }}>
+                      <Clock size={14} />
+                      {settings.language === 'zh' ? '最近使用' : 'Recent'}
+                    </label>
+                    <div className="space-y-2 max-h-32 overflow-y-auto">
+                      {countdownHistory.slice(0, 6).map(item => (
+                        <div
+                          key={item.id}
+                          className="flex items-center justify-between p-2 rounded-md transition-all hover:opacity-80"
+                          style={{
+                            background: isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
+                            border: isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)',
+                          }}
+                        >
+                          <button
+                            onClick={() => handleQuickCountdown(item.hours, item.minutes, item.seconds)}
+                            className="flex-1 text-left text-sm transition-all active:scale-95"
+                            style={{ color: styles.panel.textColor }}
+                          >
+                            {formatCountdownDuration(item.hours, item.minutes, item.seconds)}
+                            <span className="text-xs ml-2" style={{ color: styles.panel.labelColor }}>
+                              (x{item.usageCount})
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => handleRemoveHistory(item.id)}
+                            className="p-1 rounded transition-all hover:opacity-70"
+                            style={{ color: '#ef4444' }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

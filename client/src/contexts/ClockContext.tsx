@@ -39,7 +39,6 @@ export interface ClockSettings {
   dateCountdownTarget: string; // 日期倒计时目标日期，格式 YYYY-MM-DD
   language: 'zh' | 'en'; // 语言设置：中文或英文
   countdownSound: SoundType; // 倒计时结束声音类型
-  countdownScreenFlash: boolean; // 倒计时结束是否屏幕闪烁
 }
 
 const DEFAULT_SETTINGS: ClockSettings = {
@@ -63,7 +62,6 @@ const DEFAULT_SETTINGS: ClockSettings = {
   dateCountdownTarget: '2027-01-01',
   language: 'zh',
   countdownSound: 'beep',
-  countdownScreenFlash: false,
 };
 
 const STORAGE_KEY = 'advanced-clock-settings';

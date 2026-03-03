@@ -55,20 +55,15 @@ function ClockPage() {
   // Handle countdown finish effects - only trigger on state change from false to true
   useEffect(() => {
     if (countdownFinished && !prevCountdownFinishedRef.current) {
-      console.log('Countdown finished! Playing sound and flash...');
+      console.log('Countdown finished! Playing sound...');
       
       // Play the selected countdown sound
       if (settings.countdownSound !== 'mute') {
         playSound(settings.countdownSound, 1.5);
       }
-      
-      // Optionally trigger screen flash
-      if (settings.countdownScreenFlash) {
-        screenFlash(settings.bgColor, 1.5, 5);
-      }
     }
     prevCountdownFinishedRef.current = countdownFinished;
-  }, [countdownFinished, settings.countdownSound, settings.countdownScreenFlash, settings.bgColor]);
+  }, [countdownFinished, settings.countdownSound]);
 
   // Double-click to toggle fullscreen
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
