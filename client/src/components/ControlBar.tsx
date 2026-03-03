@@ -308,18 +308,21 @@ export default function ControlBar() {
                   label="隐藏秒"
                   checked={settings.hideSeconds}
                   onChange={v => updateSettings({ hideSeconds: v })}
+                  isLightBackground={isLightBackground}
                 />
                 <ToggleOption
                   icon={<Calendar size={13} />}
                   label="显示日期"
                   checked={settings.showDate}
                   onChange={v => updateSettings({ showDate: v })}
+                  isLightBackground={isLightBackground}
                 />
                 <ToggleOption
                   icon={<Calendar size={13} />}
                   label="显示日期倒计时"
                   checked={settings.showDateCountdown}
                   onChange={v => updateSettings({ showDateCountdown: v })}
+                  isLightBackground={isLightBackground}
                 />
               </div>
             </ControlGroup>
@@ -369,18 +372,21 @@ export default function ControlBar() {
                   icon={isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
                   label={isFullscreen ? '退出全屏' : '全屏显示'}
                   onClick={toggleFullscreen}
+                  isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<Crosshair size={14} />}
                   label="时间校准"
                   onClick={() => setShowCalibration(!showCalibration)}
                   active={showCalibration}
+                  isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<Bell size={14} />}
                   label="闹钟/倒计时"
                   onClick={() => setShowAlarmCountdown(!showAlarmCountdown)}
                   active={showAlarmCountdown}
+                  isLightBackground={isLightBackground}
                 />
               </div>
             </ControlGroup>
@@ -392,16 +398,19 @@ export default function ControlBar() {
                   icon={<span>🤖</span>}
                   label="赛博朋克"
                   onClick={() => applyTheme('cyberpunk')}
+                  isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<span>⚪</span>}
                   label="极简白"
                   onClick={() => applyTheme('minimal')}
+                  isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<span>💚</span>}
                   label="复古绿屏"
                   onClick={() => applyTheme('retro')}
+                  isLightBackground={isLightBackground}
                 />
               </div>
             </ControlGroup>
@@ -413,11 +422,13 @@ export default function ControlBar() {
                   icon={<Download size={14} />}
                   label="导出配置"
                   onClick={exportConfig}
+                  isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<Upload size={14} />}
                   label="导入配置"
                   onClick={() => fileInputRef.current?.click()}
+                  isLightBackground={isLightBackground}
                 />
                 <input
                   ref={fileInputRef}
@@ -449,18 +460,16 @@ function ControlGroup({ icon, label, children, textColor, labelColor, iconColor 
   );
 }
 
-function ToggleOption({ icon, label, checked, onChange }: { icon: React.ReactNode; label: string; checked: boolean; onChange: (v: boolean) => void }) {
-  const bgColor = document.documentElement.style.getPropertyValue('--bg-color') || '#001100';
-  const isLight = bgColor.length > 0 && parseInt(bgColor.slice(1, 3), 16) * 299 + parseInt(bgColor.slice(3, 5), 16) * 587 + parseInt(bgColor.slice(5, 7), 16) * 114 > 128000;
+function ToggleOption({ icon, label, checked, onChange, isLightBackground }: { icon: React.ReactNode; label: string; checked: boolean; onChange: (v: boolean) => void; isLightBackground?: boolean }) {
   
   return (
     <button
       onClick={() => onChange(!checked)}
       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-200 active:scale-95"
       style={{
-        background: checked ? 'rgba(59, 130, 246, 0.15)' : (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
-        border: checked ? '1px solid rgba(59, 130, 246, 0.3)' : (isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
-        color: checked ? 'rgba(59, 130, 246, 0.8)' : (isLight ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
+        background: checked ? 'rgba(59, 130, 246, 0.15)' : (isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
+        border: checked ? '1px solid rgba(59, 130, 246, 0.3)' : (isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
+        color: checked ? 'rgba(59, 130, 246, 0.8)' : (isLightBackground ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
       }}
     >
       <span>{icon}</span>
@@ -469,18 +478,16 @@ function ToggleOption({ icon, label, checked, onChange }: { icon: React.ReactNod
   );
 }
 
-function ActionButton({ icon, label, onClick, active }: { icon: React.ReactNode; label: string; onClick: () => void; active?: boolean }) {
-  const bgColor = document.documentElement.style.getPropertyValue('--bg-color') || '#001100';
-  const isLight = bgColor.length > 0 && parseInt(bgColor.slice(1, 3), 16) * 299 + parseInt(bgColor.slice(3, 5), 16) * 587 + parseInt(bgColor.slice(5, 7), 16) * 114 > 128000;
+function ActionButton({ icon, label, onClick, active, isLightBackground }: { icon: React.ReactNode; label: string; onClick: () => void; active?: boolean; isLightBackground?: boolean }) {
   
   return (
     <button
       onClick={onClick}
       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-200 active:scale-95"
       style={{
-        background: active ? 'rgba(59, 130, 246, 0.15)' : (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
-        border: active ? '1px solid rgba(59, 130, 246, 0.3)' : (isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
-        color: active ? 'rgba(59, 130, 246, 0.8)' : (isLight ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
+        background: active ? 'rgba(59, 130, 246, 0.15)' : (isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
+        border: active ? '1px solid rgba(59, 130, 246, 0.3)' : (isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
+        color: active ? 'rgba(59, 130, 246, 0.8)' : (isLightBackground ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
       }}
     >
       <span>{icon}</span>
