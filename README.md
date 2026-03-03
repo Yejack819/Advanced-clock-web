@@ -159,16 +159,5 @@ const DEFAULT_SETTINGS: ClockSettings = {
 - GitHub Issues：[提交问题](https://github.com/Yejack819/advanced-clock-web/issues)
 - GitHub Discussions：[讨论](https://github.com/Yejack819/advanced-clock-web/discussions)
 
-## 🎯 未来计划
-
-- [ ] 番茄钟预设（25分钟工作+5分钟休息）
-- [ ] 键盘快捷键提示面板
-- [ ] 时钟声音反馈选项（滴答声、整点报时等）
-- [ ] 倒计时预设快捷按钮
-- [ ] 自定义提示音选择
-- [ ] 倒计时历史记录
-- [ ] 多语言支持
-
----
 
 **Made with ❤️ by Yejack819**
