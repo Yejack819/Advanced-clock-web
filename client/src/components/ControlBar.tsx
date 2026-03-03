@@ -158,7 +158,7 @@ export default function ControlBar() {
                     background: 'rgba(255,255,255,0.08)',
                   }}
                 />
-                <span className="text-xs text-white/40 w-14 text-right font-mono tabular-nums">
+                <span className="text-xs w-14 text-right font-mono tabular-nums" style={{ color: panelStyle.textColor }}>
                   {settings.fontSize}px
                 </span>
               </div>
@@ -177,10 +177,10 @@ export default function ControlBar() {
                   className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer"
                   style={{
                     accentColor: '#3b82f6',
-                    background: 'rgba(255,255,255,0.08)',
+                    background: isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
                   }}
                 />
-                <span className="text-xs text-white/40 w-14 text-right font-mono tabular-nums">
+                <span className="text-xs w-14 text-right font-mono tabular-nums" style={{ color: panelStyle.textColor }}>
                   {settings.animationSpeed.toFixed(1)}s
                 </span>
               </div>
@@ -199,10 +199,10 @@ export default function ControlBar() {
                   className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer"
                   style={{
                     accentColor: '#3b82f6',
-                    background: 'rgba(255,255,255,0.08)',
+                    background: isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
                   }}
                 />
-                <span className="text-xs text-white/40 w-14 text-right font-mono tabular-nums">
+                <span className="text-xs w-14 text-right font-mono tabular-nums" style={{ color: panelStyle.textColor }}>
                   {settings.letterSpacing}px
                 </span>
               </div>
@@ -213,8 +213,12 @@ export default function ControlBar() {
               <select
                 value={settings.timezone}
                 onChange={e => updateSettings({ timezone: e.target.value })}
-                className="w-full bg-white/5 border border-white/8 rounded-md px-3 py-2 text-sm text-white/70 outline-none focus:border-blue-500/40 transition-colors appearance-none active:scale-95"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
+                className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:border-blue-500/40 transition-colors appearance-none active:scale-95"
+                style={{
+                  background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                  border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                  color: panelStyle.textColor,
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${isLightBackground ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
               >
                 <option value="Asia/Shanghai" style={{ background: '#141414', color: '#ccc' }}>上海 (UTC+8)</option>
                 <option value="Asia/Tokyo" style={{ background: '#141414', color: '#ccc' }}>东京 (UTC+9)</option>
@@ -231,8 +235,12 @@ export default function ControlBar() {
               <select
                 value={settings.fontFamily}
                 onChange={e => updateSettings({ fontFamily: e.target.value })}
-                className="w-full bg-white/5 border border-white/8 rounded-md px-3 py-2 text-sm text-white/70 outline-none focus:border-blue-500/40 transition-colors appearance-none active:scale-95"
-                style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.3)' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
+                className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:border-blue-500/40 transition-colors appearance-none active:scale-95"
+                style={{
+                  background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                  border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                  color: panelStyle.textColor,
+                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${isLightBackground ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
               >
                 {FONT_OPTIONS.map(f => (
                   <option key={f.value} value={f.value} style={{ background: '#141414', color: '#ccc' }}>
@@ -257,7 +265,12 @@ export default function ControlBar() {
                   type="text"
                   value={settings.fontColor}
                   onChange={e => updateSettings({ fontColor: e.target.value })}
-                  className="flex-1 bg-white/5 border border-white/8 rounded-md px-3 py-1.5 text-sm text-white/60 font-mono outline-none focus:border-blue-500/40 transition-colors"
+                  className="flex-1 border rounded-md px-3 py-1.5 text-sm font-mono outline-none focus:border-blue-500/40 transition-colors"
+                  style={{
+                    background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                    border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                    color: panelStyle.textColor,
+                  }}
                 />
               </div>
             </ControlGroup>
@@ -277,7 +290,12 @@ export default function ControlBar() {
                   type="text"
                   value={settings.bgColor}
                   onChange={e => updateSettings({ bgColor: e.target.value })}
-                  className="flex-1 bg-white/5 border border-white/8 rounded-md px-3 py-1.5 text-sm text-white/60 font-mono outline-none focus:border-blue-500/40 transition-colors"
+                  className="flex-1 border rounded-md px-3 py-1.5 text-sm font-mono outline-none focus:border-blue-500/40 transition-colors"
+                  style={{
+                    background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                    border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                    color: panelStyle.textColor,
+                  }}
                 />
               </div>
             </ControlGroup>
@@ -311,23 +329,33 @@ export default function ControlBar() {
               <ControlGroup icon={<Calendar size={14} />} label="日期倒计时" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
                 <div className="flex flex-col gap-3">
                   <div>
-                    <label className="text-xs text-white/50 block mb-1">标签（最多4个汉字）</label>
+                    <label className="text-xs block mb-1" style={{ color: panelStyle.labelColor }}>标签（最多4个汉字）</label>
                     <input
                       type="text"
                       value={settings.dateCountdownLabel}
                       onChange={e => updateSettings({ dateCountdownLabel: e.target.value.slice(0, 4) })}
                       maxLength={4}
-                      className="w-full bg-white/5 border border-white/8 rounded-md px-3 py-1.5 text-sm text-white outline-none focus:border-blue-500/40 transition-colors"
+                      className="w-full border rounded-md px-3 py-1.5 text-sm outline-none focus:border-blue-500/40 transition-colors"
+                      style={{
+                        background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                        border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                        color: panelStyle.textColor,
+                      }}
                       placeholder="例：新年"
                     />
                   </div>
                   <div>
-                    <label className="text-xs text-white/50 block mb-1">目标日期</label>
+                    <label className="text-xs block mb-1" style={{ color: panelStyle.labelColor }}>目标日期</label>
                     <input
                       type="date"
                       value={settings.dateCountdownTarget}
                       onChange={e => updateSettings({ dateCountdownTarget: e.target.value })}
-                      className="w-full bg-white/5 border border-white/8 rounded-md px-3 py-1.5 text-sm text-white outline-none focus:border-blue-500/40 transition-colors"
+                      className="w-full border rounded-md px-3 py-1.5 text-sm outline-none focus:border-blue-500/40 transition-colors"
+                      style={{
+                        background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                        border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                        color: panelStyle.textColor,
+                      }}
                     />
                   </div>
                 </div>
