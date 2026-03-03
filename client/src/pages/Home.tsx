@@ -47,6 +47,14 @@ function ClockPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen, showCalibration, settings.hideSeconds, toggleFullscreen, setShowCalibration, updateSettings]);
 
+  // Double-click to toggle fullscreen
+  const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only toggle if clicking on empty space (not on interactive elements)
+    if ((e.target as HTMLElement).tagName === 'DIV' || (e.target as HTMLElement).tagName === 'SPAN') {
+      toggleFullscreen();
+    }
+  };
+
   return (
     <div
       className={`min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden ${isFullscreen ? 'fullscreen-mode' : ''}`}
@@ -54,6 +62,7 @@ function ClockPage() {
         backgroundColor: settings.bgColor,
         transition: 'background-color 0.3s ease',
       }}
+      onDoubleClick={handleDoubleClick}
     >
       {/* Subtle vignette effect */}
       <div
