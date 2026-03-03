@@ -42,11 +42,12 @@ export default function ControlBar() {
           onClick={() => setExpanded(!expanded)}
           className="flex items-center gap-1.5 px-5 py-1.5 rounded-t-lg transition-all duration-200 hover:bg-white/10 active:scale-95"
           style={{
-            background: 'rgba(18, 18, 18, 0.92)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.06)',
+            background: 'rgba(255, 255, 255, 0.08)',
+            backdropFilter: 'blur(20px) saturate(180%)',
+            WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            border: '1px solid rgba(255,255,255,0.15)',
             borderBottom: 'none',
-            color: 'rgba(255,255,255,0.4)',
+            color: 'rgba(255,255,255,0.6)',
             fontSize: '12px',
           }}
         >
@@ -69,13 +70,14 @@ export default function ControlBar() {
         className="transition-all duration-400 overflow-hidden"
         style={{
           maxHeight: expanded ? '700px' : '0px',
-          background: 'rgba(14, 14, 14, 0.95)',
-          backdropFilter: 'blur(30px)',
-          borderTop: expanded ? '1px solid rgba(255,255,255,0.06)' : 'none',
+          background: 'rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(30px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(30px) saturate(200%)',
+          borderTop: expanded ? '1px solid rgba(255,255,255,0.2)' : 'none',
         }}
       >
-        <div className="px-4 pt-5 pb-8 md:px-8 md:pt-6 md:pb-10 max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-5">
+        <div className="px-3 pt-3 pb-4 md:px-5 md:pt-3 md:pb-5 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
 
             {/* Font Size */}
             <ControlGroup icon={<Type size={14} />} label="数字大小">
@@ -346,12 +348,12 @@ export default function ControlBar() {
 // Helper Components
 function ControlGroup({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <span className="text-white/40">{icon}</span>
-        <label className="text-xs font-medium text-white/60 uppercase tracking-wider">{label}</label>
+    <div className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-1.5">
+        <span className="text-white/40 flex-shrink-0">{icon}</span>
+        <label className="text-xs font-medium text-white/70 uppercase tracking-wider leading-tight">{label}</label>
       </div>
-      <div className="pl-6">{children}</div>
+      <div className="pl-5">{children}</div>
     </div>
   );
 }
@@ -360,7 +362,7 @@ function ToggleOption({ icon, label, checked, onChange }: { icon: React.ReactNod
   return (
     <button
       onClick={() => onChange(!checked)}
-      className="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 hover:bg-white/5 active:scale-95"
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-200 hover:bg-white/5 active:scale-95"
       style={{
         background: checked ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255,255,255,0.03)',
         border: checked ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255,255,255,0.08)',
@@ -377,7 +379,7 @@ function ActionButton({ icon, label, onClick, active }: { icon: React.ReactNode;
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-2 px-3 py-2 rounded-md transition-all duration-200 hover:bg-white/5 active:scale-95"
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-200 hover:bg-white/5 active:scale-95"
       style={{
         background: active ? 'rgba(59, 130, 246, 0.15)' : 'rgba(255,255,255,0.03)',
         border: active ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid rgba(255,255,255,0.08)',

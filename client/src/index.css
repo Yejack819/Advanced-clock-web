@@ -120,7 +120,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+    font-family: 'Noto Serif SC', system-ui, -apple-system, serif;
     overflow: hidden;
   }
   button:not(:disabled),
