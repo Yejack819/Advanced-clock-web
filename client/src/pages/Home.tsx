@@ -9,7 +9,7 @@
  * - 完整的国际化支持
  * - 倒计时结束时的声音和屏幕闪烁效果
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ClockProvider, useClock } from '@/contexts/ClockContext';
 import { t } from '@/lib/i18n';
 import { playSound, screenFlash } from '@/lib/soundManager';
@@ -20,6 +20,7 @@ import AlarmCountdownPanel from '@/components/AlarmCountdownPanel';
 
 function ClockPage() {
   const { settings, isFullscreen, showCalibration, showAlarmCountdown, countdownFinished, toggleFullscreen, setShowCalibration, updateSettings } = useClock();
+  const prevCountdownFinishedRef = useRef(false);
 
   // Keyboard shortcuts
   React.useEffect(() => {
@@ -51,17 +52,22 @@ function ClockPage() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen, showCalibration, settings.hideSeconds, toggleFullscreen, setShowCalibration, updateSettings]);
 
-  // Handle countdown finish effects
+  // Handle countdown finish effects - only trigger on state change from false to true
   useEffect(() => {
-    if (countdownFinished) {
+    if (countdownFinished && !prevCountdownFinishedRef.current) {
+      console.log('Countdown finished! Playing sound and flash...');
+      
       // Play the selected countdown sound
-      playSound(settings.countdownSound, 1.5);
+      if (settings.countdownSound !== 'mute') {
+        playSound(settings.countdownSound, 1.5);
+      }
       
       // Optionally trigger screen flash
       if (settings.countdownScreenFlash) {
         screenFlash(settings.bgColor, 1.5, 5);
       }
     }
+    prevCountdownFinishedRef.current = countdownFinished;
   }, [countdownFinished, settings.countdownSound, settings.countdownScreenFlash, settings.bgColor]);
 
   // Double-click to toggle fullscreen

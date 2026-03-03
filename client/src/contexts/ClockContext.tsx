@@ -146,16 +146,12 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       setCountdownRemaining(prev => {
         const newValue = prev - 1;
         if (newValue <= 0) {
-          // Countdown finished - trigger sound and flash
+          // Countdown finished
           setCountdownRunning(false);
           if (!countdownFinishedRef.current) {
             countdownFinishedRef.current = true;
+            // Trigger the finished state
             setCountdownFinished(true);
-            // Reset the flag after a short delay
-            setTimeout(() => {
-              countdownFinishedRef.current = false;
-              setCountdownFinished(false);
-            }, 100);
           }
           return 0;
         }
