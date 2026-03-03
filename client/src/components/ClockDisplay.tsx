@@ -7,6 +7,7 @@
  * - 日期显示为时钟字号的 1/3
  * - 支持隐藏秒（秒固定00但时分仍刷新动画）
  * - 支持中文和英文显示，日期格式国际化
+ * - 日期禁止转行
  */
 import { useEffect, useState, useRef } from 'react';
 import { useClock } from '@/contexts/ClockContext';
@@ -107,6 +108,7 @@ export default function ClockDisplay() {
             letterSpacing: '0.05em',
             opacity: 0.6,
             fontWeight: 300,
+            whiteSpace: 'nowrap',
           }}
         >
           {getCountdownText()}
@@ -126,6 +128,7 @@ export default function ClockDisplay() {
             letterSpacing: '0.1em',
             opacity: 0.75,
             fontWeight: 300,
+            whiteSpace: 'nowrap',
           }}
         >
           {getDateDisplayText()}
