@@ -6,9 +6,11 @@
  * - 底部控制面板
  * - 全屏模式下隐藏所有非时钟元素
  * - 快捷键支持: F(全屏) C(校准) S(隐藏秒)
+ * - 完整的国际化支持
  */
 import React from 'react';
 import { ClockProvider, useClock } from '@/contexts/ClockContext';
+import { t } from '@/lib/i18n';
 import ClockDisplay from '@/components/ClockDisplay';
 import ControlBar from '@/components/ControlBar';
 import CalibrationPanel from '@/components/CalibrationPanel';
@@ -93,7 +95,7 @@ function ClockPage() {
           className="fixed bottom-4 left-1/2 -translate-x-1/2 text-white/20 text-xs transition-opacity duration-1000 opacity-0 hover:opacity-100"
           style={{ fontFamily: 'system-ui' }}
         >
-          {settings.language === 'en' ? 'Press ESC to exit fullscreen | F fullscreen | C calibrate | S hide seconds' : '按 ESC 退出全屏 | F 全屏 | C 校准 | S 隐藏秒'}
+          {t(settings.language, 'shortcutsExit')}
         </div>
       )}
 
@@ -103,7 +105,7 @@ function ClockPage() {
           className="fixed top-4 right-4 text-white/10 text-xs transition-opacity duration-300 hover:text-white/30"
           style={{ fontFamily: 'system-ui' }}
         >
-          {settings.language === 'en' ? 'Shortcuts: F(fullscreen) C(calibrate) S(hide seconds)' : '快捷键: F(全屏) C(校准) S(隐藏秒)'}
+          {t(settings.language, 'shortcutsFullscreen')}
         </div>
       )}
     </div>

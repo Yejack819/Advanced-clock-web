@@ -6,19 +6,16 @@
  * - 冒号使用两个圆点代替文字冒号，带呼吸闪烁
  * - 日期显示为时钟字号的 1/3
  * - 支持隐藏秒（秒固定00但时分仍刷新动画）
- * - 支持中文和英文显示
+ * - 支持中文和英文显示，日期格式国际化
  */
 import { useEffect, useState, useRef } from 'react';
 import { useClock } from '@/contexts/ClockContext';
+import { formatDate, formatCountdown } from '@/lib/i18n';
 import DigitRoller from './DigitRoller';
 
 function padTwo(n: number): string {
   return n.toString().padStart(2, '0');
 }
-
-const WEEKDAYS_ZH = ['日', '一', '二', '三', '四', '五', '六'];
-const WEEKDAYS_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default function ClockDisplay() {
   const { settings, countdownRemaining, countdownRunning } = useClock();
@@ -47,10 +44,9 @@ export default function ClockDisplay() {
       minutes: padTwo(localTime.getMinutes()),
       seconds: hideSeconds ? '00' : padTwo(localTime.getSeconds()),
       year: localTime.getFullYear(),
-      month: padTwo(localTime.getMonth() + 1),
-      day: padTwo(localTime.getDate()),
+      month: localTime.getMonth() + 1,
+      day: localTime.getDate(),
       weekday: localTime.getDay(),
-      monthIndex: localTime.getMonth(),
     };
   };
 
@@ -72,22 +68,14 @@ export default function ClockDisplay() {
   const digitHeight = fontSize * 1.15;
   const dateHeight = digitHeight * (lineHeight / 100);
 
-  // Get date display text based on language
+  // Get date display text based on language and format
   const getDateDisplayText = () => {
-    if (language === 'en') {
-      return `${MONTHS_EN[time.monthIndex]} ${time.day}, ${time.year} ${WEEKDAYS_EN[time.weekday]}`;
-    } else {
-      return `${time.year}年${time.month}月${time.day}日 星期${WEEKDAYS_ZH[time.weekday]}`;
-    }
+    return formatDate(language, time.year, time.month, time.day, time.weekday);
   };
 
   // Get countdown text based on language
   const getCountdownText = () => {
-    if (language === 'en') {
-      return `${daysUntil} days until ${dateCountdownLabel}`;
-    } else {
-      return `距离${dateCountdownLabel}还有${daysUntil}天`;
-    }
+    return formatCountdown(language, daysUntil, dateCountdownLabel);
   };
 
   // Get date font family based on language

@@ -7,9 +7,11 @@
  * - 包含：字号调节、字体选择、颜色选择、隐藏秒、显示日期、全屏、校准、间距
  * - 默认展开，可折叠
  * - 按钮点击动画反馈
+ * - 完整的国际化支持
  */
 import React, { useState } from 'react';
 import { useClock, FONT_OPTIONS } from '@/contexts/ClockContext';
+import { t } from '@/lib/i18n';
 import {
   Maximize,
   Minimize,
@@ -98,6 +100,17 @@ export default function ControlBar() {
   const buttonStyle = styles.toggleButton;
   const panelStyle = styles.panel;
 
+  // 时区选项
+  const timezoneOptions = [
+    { value: 'Asia/Shanghai', label: t(settings.language, 'shanghai'), utc: 'UTC+8' },
+    { value: 'Asia/Tokyo', label: t(settings.language, 'tokyo'), utc: 'UTC+9' },
+    { value: 'America/New_York', label: t(settings.language, 'newyork'), utc: 'UTC-5' },
+    { value: 'America/Los_Angeles', label: t(settings.language, 'losangeles'), utc: 'UTC-8' },
+    { value: 'Europe/London', label: t(settings.language, 'london'), utc: 'UTC+0' },
+    { value: 'Europe/Paris', label: t(settings.language, 'paris'), utc: 'UTC+1' },
+    { value: 'Australia/Sydney', label: t(settings.language, 'sydney'), utc: 'UTC+11' },
+  ];
+
   return (
     <div className="control-bar fixed bottom-0 left-0 right-0 z-50">
       {/* Toggle button - always visible */}
@@ -118,12 +131,12 @@ export default function ControlBar() {
           {expanded ? (
             <>
               <ChevronDown size={14} />
-              <span>收起</span>
+              <span>{t(settings.language, 'collapse')}</span>
             </>
           ) : (
             <>
               <ChevronUp size={14} />
-              <span>设置</span>
+              <span>{t(settings.language, 'settings')}</span>
             </>
           )}
         </button>
@@ -144,7 +157,7 @@ export default function ControlBar() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
 
             {/* Font Size */}
-            <ControlGroup icon={<Type size={14} />} label="数字大小" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            <ControlGroup icon={<Type size={14} />} label={t(settings.language, 'fontSize')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex items-center gap-3">
                 <input
                   type="range"
@@ -165,8 +178,8 @@ export default function ControlBar() {
               </div>
             </ControlGroup>
 
-            {/* Animation Speed (动画速度) */}
-            <ControlGroup icon={<Clock size={14} />} label="动画速度" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            {/* Animation Speed */}
+            <ControlGroup icon={<Clock size={14} />} label={t(settings.language, 'animationSpeed')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex items-center gap-3">
                 <input
                   type="range"
@@ -187,8 +200,8 @@ export default function ControlBar() {
               </div>
             </ControlGroup>
 
-            {/* Letter Spacing (数字间距) */}
-            <ControlGroup icon={<Maximize2 size={14} />} label="数字间距" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            {/* Letter Spacing */}
+            <ControlGroup icon={<Maximize2 size={14} />} label={t(settings.language, 'letterSpacing')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex items-center gap-3">
                 <input
                   type="range"
@@ -210,7 +223,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Timezone */}
-            <ControlGroup icon={<Clock size={14} />} label="时区" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            <ControlGroup icon={<Clock size={14} />} label={t(settings.language, 'timezone')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <select
                 value={settings.timezone}
                 onChange={e => updateSettings({ timezone: e.target.value })}
@@ -221,18 +234,16 @@ export default function ControlBar() {
                   color: panelStyle.textColor,
                   backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${isLightBackground ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
               >
-                <option value="Asia/Shanghai" style={{ background: '#141414', color: '#ccc' }}>上海 (UTC+8)</option>
-                <option value="Asia/Tokyo" style={{ background: '#141414', color: '#ccc' }}>东京 (UTC+9)</option>
-                <option value="America/New_York" style={{ background: '#141414', color: '#ccc' }}>纽约 (UTC-5)</option>
-                <option value="America/Los_Angeles" style={{ background: '#141414', color: '#ccc' }}>洛杉矶 (UTC-8)</option>
-                <option value="Europe/London" style={{ background: '#141414', color: '#ccc' }}>伦敦 (UTC+0)</option>
-                <option value="Europe/Paris" style={{ background: '#141414', color: '#ccc' }}>巴黎 (UTC+1)</option>
-                <option value="Australia/Sydney" style={{ background: '#141414', color: '#ccc' }}>悉尼 (UTC+11)</option>
+                {timezoneOptions.map(tz => (
+                  <option key={tz.value} value={tz.value} style={{ background: '#141414', color: '#ccc' }}>
+                    {tz.label} ({tz.utc})
+                  </option>
+                ))}
               </select>
             </ControlGroup>
 
             {/* Font Family */}
-            <ControlGroup icon={<Type size={14} />} label="字体" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            <ControlGroup icon={<Type size={14} />} label={t(settings.language, 'fontFamily')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <select
                 value={settings.fontFamily}
                 onChange={e => updateSettings({ fontFamily: e.target.value })}
@@ -252,7 +263,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Font Color */}
-            <ControlGroup icon={<Palette size={14} />} label="字体颜色" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            <ControlGroup icon={<Palette size={14} />} label={t(settings.language, 'fontColor')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <input
@@ -277,7 +288,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Background Color */}
-            <ControlGroup icon={<Palette size={14} />} label="背景颜色" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            <ControlGroup icon={<Palette size={14} />} label={t(settings.language, 'bgColor')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex items-center gap-2">
                 <div className="relative">
                   <input
@@ -302,25 +313,25 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Toggle Options */}
-            <ControlGroup icon={<Eye size={14} />} label="显示选项" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            <ControlGroup icon={<Eye size={14} />} label={t(settings.language, 'displayOptions')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex flex-col gap-3">
                 <ToggleOption
                   icon={settings.hideSeconds ? <EyeOff size={13} /> : <Eye size={13} />}
-                  label="隐藏秒"
+                  label={t(settings.language, 'hideSeconds')}
                   checked={settings.hideSeconds}
                   onChange={v => updateSettings({ hideSeconds: v })}
                   isLightBackground={isLightBackground}
                 />
                 <ToggleOption
                   icon={<Calendar size={13} />}
-                  label="显示日期"
+                  label={t(settings.language, 'showDate')}
                   checked={settings.showDate}
                   onChange={v => updateSettings({ showDate: v })}
                   isLightBackground={isLightBackground}
                 />
                 <ToggleOption
                   icon={<Calendar size={13} />}
-                  label="显示日期倒计时"
+                  label={t(settings.language, 'showDateCountdown')}
                   checked={settings.showDateCountdown}
                   onChange={v => updateSettings({ showDateCountdown: v })}
                   isLightBackground={isLightBackground}
@@ -330,26 +341,25 @@ export default function ControlBar() {
 
             {/* Date Countdown Settings */}
             {settings.showDateCountdown && (
-              <ControlGroup icon={<Calendar size={14} />} label="日期倒计时" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+              <ControlGroup icon={<Calendar size={14} />} label={t(settings.language, 'dateCountdownSettings')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
                 <div className="flex flex-col gap-3">
                   <div>
-                    <label className="text-xs block mb-1" style={{ color: panelStyle.labelColor }}>标签（最多4个汉字）</label>
+                    <label className="text-xs block mb-1" style={{ color: panelStyle.labelColor }}>{t(settings.language, 'countdownLabel')}</label>
                     <input
                       type="text"
                       value={settings.dateCountdownLabel}
-                      onChange={e => updateSettings({ dateCountdownLabel: e.target.value.slice(0, 4) })}
-                      maxLength={4}
+                      onChange={e => updateSettings({ dateCountdownLabel: e.target.value })}
                       className="w-full border rounded-md px-3 py-1.5 text-sm outline-none focus:border-blue-500/40 transition-colors"
                       style={{
                         background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
                         border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
                         color: panelStyle.textColor,
                       }}
-                      placeholder="例：新年"
+                      placeholder={t(settings.language, 'countdownLabelPlaceholder')}
                     />
                   </div>
                   <div>
-                    <label className="text-xs block mb-1" style={{ color: panelStyle.labelColor }}>目标日期</label>
+                    <label className="text-xs block mb-1" style={{ color: panelStyle.labelColor }}>{t(settings.language, 'countdownDate')}</label>
                     <input
                       type="date"
                       value={settings.dateCountdownTarget}
@@ -367,24 +377,24 @@ export default function ControlBar() {
             )}
 
             {/* Actions */}
-            <ControlGroup icon={<Maximize size={14} />} label="操作" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            <ControlGroup icon={<Maximize size={14} />} label={t(settings.language, 'actions')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex flex-col gap-2">
                 <ActionButton
                   icon={isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
-                  label={isFullscreen ? '退出全屏' : '全屏显示'}
+                  label={isFullscreen ? t(settings.language, 'exitFullscreen') : t(settings.language, 'fullscreen')}
                   onClick={toggleFullscreen}
                   isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<Crosshair size={14} />}
-                  label="时间校准"
+                  label={t(settings.language, 'calibration')}
                   onClick={() => setShowCalibration(!showCalibration)}
                   active={showCalibration}
                   isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<Bell size={14} />}
-                  label="闹钟/倒计时"
+                  label={t(settings.language, 'alarmCountdown')}
                   onClick={() => setShowAlarmCountdown(!showAlarmCountdown)}
                   active={showAlarmCountdown}
                   isLightBackground={isLightBackground}
@@ -393,23 +403,23 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Themes */}
-            <ControlGroup icon={<PaletteIcon size={14} />} label="主题预设" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            <ControlGroup icon={<PaletteIcon size={14} />} label={t(settings.language, 'themes')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex flex-col gap-2">
                 <ActionButton
                   icon={<span>🤖</span>}
-                  label="赛博朋克"
+                  label={t(settings.language, 'cyberpunk')}
                   onClick={() => applyTheme('cyberpunk')}
                   isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<span>⚪</span>}
-                  label="极简白"
+                  label={t(settings.language, 'minimal')}
                   onClick={() => applyTheme('minimal')}
                   isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<span>💚</span>}
-                  label="复古绿屏"
+                  label={t(settings.language, 'retro')}
                   onClick={() => applyTheme('retro')}
                   isLightBackground={isLightBackground}
                 />
@@ -417,7 +427,7 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Language */}
-            <ControlGroup icon={<Globe size={14} />} label="语言" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            <ControlGroup icon={<Globe size={14} />} label={t(settings.language, 'language')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex gap-2">
                 <button
                   onClick={() => updateSettings({ language: 'zh' })}
@@ -445,17 +455,17 @@ export default function ControlBar() {
             </ControlGroup>
 
             {/* Config Management */}
-            <ControlGroup icon={<Download size={14} />} label="配置" textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+            <ControlGroup icon={<Download size={14} />} label={t(settings.language, 'config')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex flex-col gap-2">
                 <ActionButton
                   icon={<Download size={14} />}
-                  label="导出配置"
+                  label={t(settings.language, 'exportConfig')}
                   onClick={exportConfig}
                   isLightBackground={isLightBackground}
                 />
                 <ActionButton
                   icon={<Upload size={14} />}
-                  label="导入配置"
+                  label={t(settings.language, 'importConfig')}
                   onClick={() => fileInputRef.current?.click()}
                   isLightBackground={isLightBackground}
                 />
