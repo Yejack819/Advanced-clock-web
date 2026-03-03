@@ -24,6 +24,18 @@ export default function AlarmCountdownPanel() {
   const [countdownHistory, setCountdownHistory] = useState(getCountdownHistory());
   const prevCountdownRunningRef = useRef(countdownRunning);
   const hasAlertedRef = useRef(false);
+  const [visible, setVisible] = useState(false);
+
+  // Mount animation
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(() => setShowAlarmCountdown(false), 280);
+  };
 
   // Update history and auto-set most frequent countdown when panel opens
   useEffect(() => {
@@ -197,8 +209,12 @@ export default function AlarmCountdownPanel() {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={styles.backdrop}
-      onClick={() => setShowAlarmCountdown(false)}
+      style={{
+        ...styles.backdrop,
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
+      onClick={handleClose}
     >
       <div
         className="relative w-full max-w-md rounded-xl overflow-hidden max-h-[90vh] overflow-y-auto"
@@ -208,6 +224,9 @@ export default function AlarmCountdownPanel() {
           WebkitBackdropFilter: styles.panel.WebkitBackdropFilter,
           border: styles.panel.border,
           boxShadow: styles.panel.boxShadow,
+          transform: visible ? 'scale(1) translateY(0)' : 'scale(0.94) translateY(12px)',
+          opacity: visible ? 1 : 0,
+          transition: 'transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
         onClick={e => e.stopPropagation()}
       >
@@ -217,7 +236,7 @@ export default function AlarmCountdownPanel() {
             {t(settings.language, 'alarmCountdownTitle')}
           </h2>
           <button
-            onClick={() => setShowAlarmCountdown(false)}
+            onClick={handleClose}
             className="p-1.5 rounded-md transition-colors active:scale-95"
             style={{
               color: styles.panel.labelColor,

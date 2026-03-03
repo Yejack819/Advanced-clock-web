@@ -75,6 +75,8 @@ interface ClockContextType {
   setShowCalibration: (v: boolean) => void;
   showAlarmCountdown: boolean;
   setShowAlarmCountdown: (v: boolean) => void;
+  showDateCountdownPanel: boolean;
+  setShowDateCountdownPanel: (v: boolean) => void;
   countdownRemaining: number; // 倒计时剩余秒数
   countdownRunning: boolean; // 倒计时是否运行中
   startCountdown: (minutes: number) => void;
@@ -104,6 +106,7 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showCalibration, setShowCalibration] = useState(false);
   const [showAlarmCountdown, setShowAlarmCountdown] = useState(false);
+  const [showDateCountdownPanel, setShowDateCountdownPanel] = useState(false);
   const [countdownRemaining, setCountdownRemaining] = useState(0);
   const [countdownRunning, setCountdownRunning] = useState(false);
   const [countdownFinished, setCountdownFinished] = useState(false);
@@ -277,6 +280,8 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       setShowCalibration,
       showAlarmCountdown,
       setShowAlarmCountdown,
+      showDateCountdownPanel,
+      setShowDateCountdownPanel,
       countdownRemaining,
       countdownRunning,
       startCountdown,

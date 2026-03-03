@@ -17,9 +17,10 @@ import ClockDisplay from '@/components/ClockDisplay';
 import ControlBar from '@/components/ControlBar';
 import CalibrationPanel from '@/components/CalibrationPanel';
 import AlarmCountdownPanel from '@/components/AlarmCountdownPanel';
+import DateCountdownPanel from '@/components/DateCountdownPanel';
 
 function ClockPage() {
-  const { settings, isFullscreen, showCalibration, showAlarmCountdown, countdownFinished, toggleFullscreen, setShowCalibration, updateSettings } = useClock();
+  const { settings, isFullscreen, showCalibration, showAlarmCountdown, showDateCountdownPanel, setShowDateCountdownPanel, countdownFinished, toggleFullscreen, setShowCalibration, updateSettings } = useClock();
   const prevCountdownFinishedRef = useRef(false);
 
   // Keyboard shortcuts
@@ -104,6 +105,11 @@ function ClockPage() {
 
       {/* Alarm/Countdown panel */}
       {showAlarmCountdown && !isFullscreen && <AlarmCountdownPanel />}
+
+      {/* Date Countdown panel */}
+      {showDateCountdownPanel && !isFullscreen && (
+        <DateCountdownPanel onClose={() => setShowDateCountdownPanel(false)} />
+      )}
 
       {/* Fullscreen hint with keyboard shortcuts */}
       {isFullscreen && (

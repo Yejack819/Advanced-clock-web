@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 
 export default function ControlBar() {
-  const { settings, updateSettings, isFullscreen, toggleFullscreen, setShowCalibration, showCalibration, setShowAlarmCountdown, showAlarmCountdown, exportConfig, importConfig, applyTheme } = useClock();
+  const { settings, updateSettings, isFullscreen, toggleFullscreen, setShowCalibration, showCalibration, setShowAlarmCountdown, showAlarmCountdown, showDateCountdownPanel, setShowDateCountdownPanel, exportConfig, importConfig, applyTheme } = useClock();
   const [expanded, setExpanded] = useState(true);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   
@@ -329,52 +329,15 @@ export default function ControlBar() {
                   onChange={v => updateSettings({ showDate: v })}
                   isLightBackground={isLightBackground}
                 />
-                <ToggleOption
+                <ActionButton
                   icon={<Calendar size={13} />}
                   label={t(settings.language, 'showDateCountdown')}
-                  checked={settings.showDateCountdown}
-                  onChange={v => updateSettings({ showDateCountdown: v })}
+                  onClick={() => setShowDateCountdownPanel(!showDateCountdownPanel)}
+                  active={showDateCountdownPanel || settings.showDateCountdown}
                   isLightBackground={isLightBackground}
                 />
               </div>
             </ControlGroup>
-
-            {/* Date Countdown Settings */}
-            {settings.showDateCountdown && (
-              <ControlGroup icon={<Calendar size={14} />} label={t(settings.language, 'dateCountdownSettings')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
-                <div className="flex flex-col gap-3">
-                  <div>
-                    <label className="text-xs block mb-1" style={{ color: panelStyle.labelColor }}>{t(settings.language, 'countdownLabel')}</label>
-                    <input
-                      type="text"
-                      value={settings.dateCountdownLabel}
-                      onChange={e => updateSettings({ dateCountdownLabel: e.target.value })}
-                      className="w-full border rounded-md px-3 py-1.5 text-sm outline-none focus:border-blue-500/40 transition-colors"
-                      style={{
-                        background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
-                        border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
-                        color: panelStyle.textColor,
-                      }}
-                      placeholder={t(settings.language, 'countdownLabelPlaceholder')}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs block mb-1" style={{ color: panelStyle.labelColor }}>{t(settings.language, 'countdownDate')}</label>
-                    <input
-                      type="date"
-                      value={settings.dateCountdownTarget}
-                      onChange={e => updateSettings({ dateCountdownTarget: e.target.value })}
-                      className="w-full border rounded-md px-3 py-1.5 text-sm outline-none focus:border-blue-500/40 transition-colors"
-                      style={{
-                        background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
-                        border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
-                        color: panelStyle.textColor,
-                      }}
-                    />
-                  </div>
-                </div>
-              </ControlGroup>
-            )}
 
             {/* Actions */}
             <ControlGroup icon={<Maximize size={14} />} label={t(settings.language, 'actions')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>

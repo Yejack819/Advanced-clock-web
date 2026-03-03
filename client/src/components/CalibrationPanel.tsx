@@ -32,8 +32,20 @@ export default function CalibrationPanel() {
     settings.calibrationOffset >= 0 ? 'fast' : 'slow'
   );
   const [amount, setAmount] = useState(() => Math.abs(settings.calibrationOffset) / 1000);
+  const [visible, setVisible] = useState(false);
   const rafRef = useRef<number>(0);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Mount animation
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const handleClose = () => {
+    setVisible(false);
+    setTimeout(() => setShowCalibration(false), 280);
+  };
 
   // 检测背景颜色亮度
   const isLightBackground = (() => {
@@ -67,7 +79,7 @@ export default function CalibrationPanel() {
   // Click outside to close
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
-      setShowCalibration(false);
+      handleClose();
     }
   };
 
@@ -138,19 +150,26 @@ export default function CalibrationPanel() {
 
   return (
     <div
-      className="settings-panel fixed inset-0 z-[60] flex items-center justify-center animate-in fade-in duration-200"
-      style={styles.backdrop}
+      className="settings-panel fixed inset-0 z-[60] flex items-center justify-center"
+      style={{
+        ...styles.backdrop,
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
       onClick={handleBackdropClick}
     >
       <div
         ref={panelRef}
-        className="relative w-full max-w-lg mx-4 rounded-2xl overflow-hidden animate-in zoom-in-95 duration-300"
+        className="relative w-full max-w-lg mx-4 rounded-2xl overflow-hidden"
         style={{
           background: styles.panel.background,
           backdropFilter: styles.panel.backdropFilter,
           WebkitBackdropFilter: styles.panel.WebkitBackdropFilter,
           border: styles.panel.border,
           boxShadow: styles.panel.boxShadow,
+          transform: visible ? 'scale(1) translateY(0)' : 'scale(0.94) translateY(12px)',
+          opacity: visible ? 1 : 0,
+          transition: 'transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
         {/* Header */}
@@ -159,7 +178,7 @@ export default function CalibrationPanel() {
             {t(settings.language, 'calibrationTitle')}
           </h3>
           <button
-            onClick={() => setShowCalibration(false)}
+            onClick={handleClose}
             className="p-1.5 rounded-lg transition-all active:scale-95"
             style={{
               color: styles.panel.labelColor,
