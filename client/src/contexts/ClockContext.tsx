@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { SoundType } from '@/lib/soundManager';
 
 // Available font options
 export const FONT_OPTIONS = [
@@ -37,6 +38,8 @@ export interface ClockSettings {
   dateCountdownLabel: string; // 日期倒计时标签，最多4个汉字
   dateCountdownTarget: string; // 日期倒计时目标日期，格式 YYYY-MM-DD
   language: 'zh' | 'en'; // 语言设置：中文或英文
+  countdownSound: SoundType; // 倒计时结束声音类型
+  countdownScreenFlash: boolean; // 倒计时结束是否屏幕闪烁
 }
 
 const DEFAULT_SETTINGS: ClockSettings = {
@@ -59,6 +62,8 @@ const DEFAULT_SETTINGS: ClockSettings = {
   dateCountdownLabel: '新年',
   dateCountdownTarget: '2027-01-01',
   language: 'zh',
+  countdownSound: 'beep',
+  countdownScreenFlash: false,
 };
 
 const STORAGE_KEY = 'advanced-clock-settings';
@@ -80,6 +85,8 @@ interface ClockContextType {
   exportConfig: () => void;
   importConfig: (file: File) => Promise<void>;
   applyTheme: (theme: 'cyberpunk' | 'minimal' | 'retro') => void;
+  countdownFinished: boolean; // 倒计时是否刚刚结束
+  setCountdownFinished: (v: boolean) => void;
 }
 
 const ClockContext = createContext<ClockContextType | null>(null);
@@ -101,8 +108,10 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
   const [showAlarmCountdown, setShowAlarmCountdown] = useState(false);
   const [countdownRemaining, setCountdownRemaining] = useState(0);
   const [countdownRunning, setCountdownRunning] = useState(false);
+  const [countdownFinished, setCountdownFinished] = useState(false);
   const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const countdownFinishedRef = useRef(false);
 
   // Auto-save settings with debounce
   useEffect(() => {
@@ -137,8 +146,17 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       setCountdownRemaining(prev => {
         const newValue = prev - 1;
         if (newValue <= 0) {
-          // Countdown finished
+          // Countdown finished - trigger sound and flash
           setCountdownRunning(false);
+          if (!countdownFinishedRef.current) {
+            countdownFinishedRef.current = true;
+            setCountdownFinished(true);
+            // Reset the flag after a short delay
+            setTimeout(() => {
+              countdownFinishedRef.current = false;
+              setCountdownFinished(false);
+            }, 100);
+          }
           return 0;
         }
         return newValue;
@@ -160,6 +178,8 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       clearInterval(countdownIntervalRef.current);
       countdownIntervalRef.current = null;
     }
+    // Reset the finished flag when starting
+    countdownFinishedRef.current = false;
     // Ensure minutes is valid
     const validMinutes = Math.max(0.01, minutes); // At least 0.01 minutes (0.6 seconds)
     setCountdownRemaining(validMinutes * 60);
@@ -179,6 +199,8 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       clearInterval(countdownIntervalRef.current);
       countdownIntervalRef.current = null;
     }
+    // Reset the finished flag when manually resetting
+    countdownFinishedRef.current = false;
     setCountdownRunning(false);
     setCountdownRemaining(0);
   };
@@ -269,6 +291,8 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       exportConfig,
       importConfig,
       applyTheme,
+      countdownFinished,
+      setCountdownFinished,
     }}>
       {children}
     </ClockContext.Provider>

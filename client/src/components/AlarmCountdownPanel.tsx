@@ -6,11 +6,13 @@
  * - 闹钟和倒计时分两个标签页
  * - 倒计时状态持久化到 Context，关闭面板后继续运行
  * - 完整的国际化支持
+ * - 倒计时结束声音和屏幕闪烁设置
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { useClock } from '@/contexts/ClockContext';
 import { t } from '@/lib/i18n';
-import { X, Bell, Timer, Play, Pause, RotateCcw } from 'lucide-react';
+import { X, Bell, Timer, Play, Pause, RotateCcw, Volume2, Zap } from 'lucide-react';
+import { SOUND_OPTIONS, playSound, screenFlash } from '@/lib/soundManager';
 
 export default function AlarmCountdownPanel() {
   const { settings, updateSettings, setShowAlarmCountdown, countdownRemaining, countdownRunning, startCountdown, pauseCountdown, resetCountdown } = useClock();
@@ -53,8 +55,7 @@ export default function AlarmCountdownPanel() {
   useEffect(() => {
     // Only alert when countdown finishes (reaches 0 from running state)
     if (countdownRemaining === 0 && prevCountdownRunningRef.current && !countdownRunning && !hasAlertedRef.current) {
-      playAlarmSound();
-      alert(t(settings.language, 'countdownFinished'));
+      playCountdownFinishSound();
       hasAlertedRef.current = true;
     }
     
@@ -64,7 +65,7 @@ export default function AlarmCountdownPanel() {
     }
     
     prevCountdownRunningRef.current = countdownRunning;
-  }, [countdownRemaining, countdownRunning, settings.language]);
+  }, [countdownRemaining, countdownRunning, settings.language, settings.countdownSound, settings.countdownScreenFlash]);
 
   const playAlarmSound = () => {
     // Simple beep using Web Audio API
@@ -82,6 +83,16 @@ export default function AlarmCountdownPanel() {
     
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.5);
+  };
+
+  const playCountdownFinishSound = () => {
+    // Play the selected countdown sound
+    playSound(settings.countdownSound, 1.5);
+    
+    // Optionally trigger screen flash
+    if (settings.countdownScreenFlash) {
+      screenFlash(settings.bgColor, 1.5, 5);
+    }
   };
 
   const handleStartCountdown = () => {
@@ -161,7 +172,7 @@ export default function AlarmCountdownPanel() {
       onClick={() => setShowAlarmCountdown(false)}
     >
       <div
-        className="relative w-full max-w-md rounded-xl overflow-hidden"
+        className="relative w-full max-w-md rounded-xl overflow-hidden max-h-[90vh] overflow-y-auto"
         style={{
           background: styles.panel.background,
           backdropFilter: styles.panel.backdropFilter,
@@ -172,7 +183,7 @@ export default function AlarmCountdownPanel() {
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: `1px solid ${styles.panel.borderBottom}` }}>
+        <div className="flex items-center justify-between px-6 py-4 sticky top-0" style={{ borderBottom: `1px solid ${styles.panel.borderBottom}`, background: styles.panel.background }}>
           <h2 className="text-lg font-medium" style={{ color: styles.panel.textColor }}>
             {t(settings.language, 'alarmCountdownTitle')}
           </h2>
@@ -390,6 +401,68 @@ export default function AlarmCountdownPanel() {
                   <RotateCcw size={16} />
                   {t(settings.language, 'countdownReset')}
                 </button>
+              </div>
+
+              {/* Sound and Flash Settings */}
+              <div className="space-y-3 pt-4" style={{ borderTop: `1px solid ${styles.panel.borderBottom}` }}>
+                {/* Sound Selection */}
+                <div className="space-y-2">
+                  <label className="text-sm flex items-center gap-2" style={{ color: styles.panel.labelColor }}>
+                    <Volume2 size={14} />
+                    {settings.language === 'zh' ? '倒计时结束声音' : 'Countdown Sound'}
+                  </label>
+                  <select
+                    value={settings.countdownSound}
+                    onChange={e => updateSettings({ countdownSound: e.target.value as any })}
+                    className="w-full rounded-md px-3 py-2 text-sm outline-none transition-colors"
+                    style={{
+                      background: styles.panel.inputBg,
+                      border: `1px solid ${styles.panel.inputBorder}`,
+                      color: styles.panel.textColor,
+                    }}
+                  >
+                    {SOUND_OPTIONS.map(option => (
+                      <option key={option.id} value={option.id}>
+                        {settings.language === 'zh' ? option.label : option.labelEn}
+                      </option>
+                    ))}
+                  </select>
+                  {settings.countdownSound !== 'mute' && (
+                    <button
+                      onClick={() => playSound(settings.countdownSound, 1.5)}
+                      className="w-full py-2 rounded-md text-sm transition-all active:scale-95"
+                      style={{
+                        background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)',
+                        border: isLightBackground ? '1px solid rgba(0,0,0,0.12)' : '1px solid rgba(255,255,255,0.12)',
+                        color: styles.panel.labelColor,
+                      }}
+                    >
+                      {settings.language === 'zh' ? '试听' : 'Preview'}
+                    </button>
+                  )}
+                </div>
+
+                {/* Screen Flash Toggle */}
+                <div className="flex items-center justify-between">
+                  <label className="text-sm flex items-center gap-2" style={{ color: styles.panel.labelColor }}>
+                    <Zap size={14} />
+                    {settings.language === 'zh' ? '屏幕闪烁' : 'Screen Flash'}
+                  </label>
+                  <button
+                    onClick={() => updateSettings({ countdownScreenFlash: !settings.countdownScreenFlash })}
+                    className="relative w-12 h-6 rounded-full transition-colors"
+                    style={{
+                      background: settings.countdownScreenFlash ? '#3b82f6' : (isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)'),
+                    }}
+                  >
+                    <div
+                      className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform"
+                      style={{
+                        transform: settings.countdownScreenFlash ? 'translateX(26px)' : 'translateX(2px)',
+                      }}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
           )}

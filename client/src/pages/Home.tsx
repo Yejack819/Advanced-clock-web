@@ -7,17 +7,19 @@
  * - 全屏模式下隐藏所有非时钟元素
  * - 快捷键支持: F(全屏) C(校准) S(隐藏秒)
  * - 完整的国际化支持
+ * - 倒计时结束时的声音和屏幕闪烁效果
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ClockProvider, useClock } from '@/contexts/ClockContext';
 import { t } from '@/lib/i18n';
+import { playSound, screenFlash } from '@/lib/soundManager';
 import ClockDisplay from '@/components/ClockDisplay';
 import ControlBar from '@/components/ControlBar';
 import CalibrationPanel from '@/components/CalibrationPanel';
 import AlarmCountdownPanel from '@/components/AlarmCountdownPanel';
 
 function ClockPage() {
-  const { settings, isFullscreen, showCalibration, showAlarmCountdown, toggleFullscreen, setShowCalibration, updateSettings } = useClock();
+  const { settings, isFullscreen, showCalibration, showAlarmCountdown, countdownFinished, toggleFullscreen, setShowCalibration, updateSettings } = useClock();
 
   // Keyboard shortcuts
   React.useEffect(() => {
@@ -48,6 +50,19 @@ function ClockPage() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen, showCalibration, settings.hideSeconds, toggleFullscreen, setShowCalibration, updateSettings]);
+
+  // Handle countdown finish effects
+  useEffect(() => {
+    if (countdownFinished) {
+      // Play the selected countdown sound
+      playSound(settings.countdownSound, 1.5);
+      
+      // Optionally trigger screen flash
+      if (settings.countdownScreenFlash) {
+        screenFlash(settings.bgColor, 1.5, 5);
+      }
+    }
+  }, [countdownFinished, settings.countdownSound, settings.countdownScreenFlash, settings.bgColor]);
 
   // Double-click to toggle fullscreen
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
