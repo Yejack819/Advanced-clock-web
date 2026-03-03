@@ -126,3 +126,16 @@ export function secondsToHMS(totalSeconds: number): { hours: number; minutes: nu
 export function hmsToSeconds(hours: number, minutes: number, seconds: number): number {
   return hours * 3600 + minutes * 60 + seconds;
 }
+
+/**
+ * 获取使用频率最高的倒计时时间
+ */
+export function getMostFrequentCountdown(): CountdownHistoryItem | null {
+  const history = getCountdownHistory();
+  if (history.length === 0) return null;
+  
+  // 按使用次数排序，返回最高的
+  return history.reduce((prev, current) => 
+    current.usageCount > prev.usageCount ? current : prev
+  );
+}

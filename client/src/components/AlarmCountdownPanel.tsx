@@ -13,7 +13,7 @@ import { useClock } from '@/contexts/ClockContext';
 import { t } from '@/lib/i18n';
 import { X, Bell, Timer, Play, Pause, RotateCcw, Volume2, Clock, Trash2 } from 'lucide-react';
 import { SOUND_OPTIONS, playSound } from '@/lib/soundManager';
-import { getCountdownHistory, addCountdownHistory, removeCountdownHistory, formatCountdownDuration } from '@/lib/countdownHistory';
+import { getCountdownHistory, addCountdownHistory, removeCountdownHistory, formatCountdownDuration, getMostFrequentCountdown } from '@/lib/countdownHistory';
 
 export default function AlarmCountdownPanel() {
   const { settings, updateSettings, setShowAlarmCountdown, countdownRemaining, countdownRunning, startCountdown, pauseCountdown, resetCountdown } = useClock();
@@ -25,9 +25,20 @@ export default function AlarmCountdownPanel() {
   const prevCountdownRunningRef = useRef(countdownRunning);
   const hasAlertedRef = useRef(false);
 
+  // Update history and auto-set most frequent countdown when panel opens
   useEffect(() => {
     setCountdownHistory(getCountdownHistory());
-  }, [countdownRunning]);
+    
+    // Auto-set to most frequent countdown when opening countdown tab
+    if (activeTab === 'countdown') {
+      const mostFrequent = getMostFrequentCountdown();
+      if (mostFrequent && !countdownRunning) {
+        setCountdownHours(mostFrequent.hours);
+        setCountdownMinutes(mostFrequent.minutes);
+        setCountdownSeconds(mostFrequent.seconds);
+      }
+    }
+  }, [activeTab, countdownRunning]);
 
   // 检测背景颜色亮度
   const isLightBackground = (() => {
