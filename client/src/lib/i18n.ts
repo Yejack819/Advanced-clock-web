@@ -48,6 +48,35 @@ export const translations = {
     'paris': '巴黎',
     'sydney': '悉尼',
     
+    // 校准面板
+    'calibrationTitle': '时间校准',
+    'calibrationDirection': '校准方向',
+    'calibrationFast': '调快（超前）',
+    'calibrationSlow': '调慢（滞后）',
+    'calibrationAmount': '校准量（秒）',
+    'calibrationStandardTime': '标准时间（系统）',
+    'calibrationCalibratedTime': '校准后时间',
+    'calibrationOffset': '偏移量',
+    'calibrationReset': '重置',
+    'calibrationApply': '应用校准',
+    
+    // 闹钟和倒计时面板
+    'alarmCountdownTitle': '闹钟 & 倒计时',
+    'alarmTab': '闹钟',
+    'countdownTab': '倒计时',
+    'alarmEnable': '启用闹钟',
+    'alarmTime': '闹钟时间',
+    'alarmWillRing': '闹钟将在 {time} 响起',
+    'countdownHours': '时',
+    'countdownMinutes': '分',
+    'countdownSeconds': '秒',
+    'countdownStart': '开始',
+    'countdownContinue': '继续',
+    'countdownPause': '暂停',
+    'countdownReset': '重置',
+    'countdownPaused': '已暂停',
+    'countdownFinished': '倒计时结束！',
+    
     // 快捷键提示
     'shortcutsFullscreen': '快捷键: F(全屏) C(校准) S(隐藏秒)',
     'shortcutsExit': '按 ESC 退出全屏 | F 全屏 | C 校准 | S 隐藏秒',
@@ -93,6 +122,35 @@ export const translations = {
     'london': 'London',
     'paris': 'Paris',
     'sydney': 'Sydney',
+    
+    // 校准面板
+    'calibrationTitle': 'Time Calibration',
+    'calibrationDirection': 'Calibration Direction',
+    'calibrationFast': 'Speed Up (Ahead)',
+    'calibrationSlow': 'Slow Down (Behind)',
+    'calibrationAmount': 'Calibration Amount (seconds)',
+    'calibrationStandardTime': 'Standard Time (System)',
+    'calibrationCalibratedTime': 'Calibrated Time',
+    'calibrationOffset': 'Offset',
+    'calibrationReset': 'Reset',
+    'calibrationApply': 'Apply Calibration',
+    
+    // 闹钟和倒计时面板
+    'alarmCountdownTitle': 'Alarm & Countdown',
+    'alarmTab': 'Alarm',
+    'countdownTab': 'Countdown',
+    'alarmEnable': 'Enable Alarm',
+    'alarmTime': 'Alarm Time',
+    'alarmWillRing': 'Alarm will ring at {time}',
+    'countdownHours': 'Hours',
+    'countdownMinutes': 'Minutes',
+    'countdownSeconds': 'Seconds',
+    'countdownStart': 'Start',
+    'countdownContinue': 'Continue',
+    'countdownPause': 'Pause',
+    'countdownReset': 'Reset',
+    'countdownPaused': 'Paused',
+    'countdownFinished': 'Countdown finished!',
     
     // 快捷键提示
     'shortcutsFullscreen': 'Shortcuts: F(fullscreen) C(calibrate) S(hide seconds)',

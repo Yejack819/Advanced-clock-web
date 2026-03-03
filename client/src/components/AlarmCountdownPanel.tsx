@@ -2,12 +2,14 @@
  * AlarmCountdownPanel - 闹钟和倒计时面板
  * 
  * 设计哲学：暗黑机械美学
- * - 毛玻璃效果的浮动面板
+ * - 液态玻璃效果的浮动面板
  * - 闹钟和倒计时分两个标签页
  * - 倒计时状态持久化到 Context，关闭面板后继续运行
+ * - 完整的国际化支持
  */
 import React, { useState, useEffect, useRef } from 'react';
 import { useClock } from '@/contexts/ClockContext';
+import { t } from '@/lib/i18n';
 import { X, Bell, Timer, Play, Pause, RotateCcw } from 'lucide-react';
 
 export default function AlarmCountdownPanel() {
@@ -19,6 +21,16 @@ export default function AlarmCountdownPanel() {
   const prevCountdownRunningRef = useRef(countdownRunning);
   const hasAlertedRef = useRef(false);
 
+  // 检测背景颜色亮度
+  const isLightBackground = (() => {
+    const bgColor = settings.bgColor;
+    const r = parseInt(bgColor.slice(1, 3), 16);
+    const g = parseInt(bgColor.slice(3, 5), 16);
+    const b = parseInt(bgColor.slice(5, 7), 16);
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    return brightness > 128;
+  })();
+
   // Alarm check
   useEffect(() => {
     if (!settings.alarmEnabled) return;
@@ -29,20 +41,20 @@ export default function AlarmCountdownPanel() {
       if (currentTime === settings.alarmTime) {
         // Trigger alarm
         playAlarmSound();
-        alert(`闹钟提醒: ${settings.alarmTime}`);
+        alert(`${t(settings.language, 'alarmTab')}: ${settings.alarmTime}`);
       }
     };
 
     const interval = setInterval(checkAlarm, 1000);
     return () => clearInterval(interval);
-  }, [settings.alarmEnabled, settings.alarmTime]);
+  }, [settings.alarmEnabled, settings.alarmTime, settings.language]);
 
   // Countdown timer alert when finished
   useEffect(() => {
     // Only alert when countdown finishes (reaches 0 from running state)
     if (countdownRemaining === 0 && prevCountdownRunningRef.current && !countdownRunning && !hasAlertedRef.current) {
       playAlarmSound();
-      alert('倒计时结束！');
+      alert(t(settings.language, 'countdownFinished'));
       hasAlertedRef.current = true;
     }
     
@@ -52,7 +64,7 @@ export default function AlarmCountdownPanel() {
     }
     
     prevCountdownRunningRef.current = countdownRunning;
-  }, [countdownRemaining, countdownRunning]);
+  }, [countdownRemaining, countdownRunning, settings.language]);
 
   const playAlarmSound = () => {
     // Simple beep using Web Audio API
@@ -80,11 +92,8 @@ export default function AlarmCountdownPanel() {
     startCountdown(totalMinutes);
   };
 
-
-
   const handlePauseCountdown = () => {
     pauseCountdown();
-    // Ensure we don't trigger the finish alert when just pausing
   };
 
   const handleResetCountdown = () => {
@@ -98,59 +107,116 @@ export default function AlarmCountdownPanel() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  // 根据背景亮度生成样式
+  const getPanelStyle = () => {
+    if (isLightBackground) {
+      return {
+        backdrop: {
+          background: 'rgba(0, 0, 0, 0.5)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        },
+        panel: {
+          background: 'rgba(255, 255, 255, 0.12)',
+          backdropFilter: 'blur(30px) saturate(200%)',
+          WebkitBackdropFilter: 'blur(30px) saturate(200%)',
+          border: '1px solid rgba(255,255,255,0.25)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.3) inset',
+          borderBottom: 'rgba(0,0,0,0.1)',
+          textColor: 'rgba(0,0,0,0.8)',
+          labelColor: 'rgba(0,0,0,0.6)',
+          inputBg: 'rgba(0,0,0,0.05)',
+          inputBorder: 'rgba(0,0,0,0.1)',
+        },
+      };
+    } else {
+      return {
+        backdrop: {
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+        },
+        panel: {
+          background: 'rgba(20,20,20,0.75)',
+          backdropFilter: 'blur(30px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(30px) saturate(180%)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset',
+          borderBottom: 'rgba(255,255,255,0.08)',
+          textColor: 'rgba(255,255,255,0.9)',
+          labelColor: 'rgba(255,255,255,0.6)',
+          inputBg: 'rgba(255,255,255,0.05)',
+          inputBorder: 'rgba(255,255,255,0.1)',
+        },
+      };
+    }
+  };
+
+  const styles = getPanelStyle();
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{
-        background: 'rgba(0,0,0,0.7)',
-        backdropFilter: 'blur(8px)',
-      }}
+      style={styles.backdrop}
       onClick={() => setShowAlarmCountdown(false)}
     >
       <div
         className="relative w-full max-w-md rounded-xl overflow-hidden"
         style={{
-          background: 'rgba(20,20,20,0.95)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+          background: styles.panel.background,
+          backdropFilter: styles.panel.backdropFilter,
+          WebkitBackdropFilter: styles.panel.WebkitBackdropFilter,
+          border: styles.panel.border,
+          boxShadow: styles.panel.boxShadow,
         }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
-          <h2 className="text-lg font-medium text-white/90">闹钟 & 倒计时</h2>
+        <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: `1px solid ${styles.panel.borderBottom}` }}>
+          <h2 className="text-lg font-medium" style={{ color: styles.panel.textColor }}>
+            {t(settings.language, 'alarmCountdownTitle')}
+          </h2>
           <button
             onClick={() => setShowAlarmCountdown(false)}
-            className="p-1.5 rounded-md hover:bg-white/5 transition-colors active:scale-95"
+            className="p-1.5 rounded-md transition-colors active:scale-95"
+            style={{
+              color: styles.panel.labelColor,
+              background: isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
+            }}
           >
-            <X size={20} className="text-white/50" />
+            <X size={20} />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-white/10">
+        <div className="flex" style={{ borderBottom: `1px solid ${styles.panel.borderBottom}` }}>
           <button
             onClick={() => setActiveTab('alarm')}
             className={`flex-1 px-6 py-3 text-sm font-medium transition-all ${
               activeTab === 'alarm'
                 ? 'text-blue-400 border-b-2 border-blue-400'
-                : 'text-white/40 hover:text-white/60'
+                : 'hover:opacity-70'
             }`}
+            style={{
+              color: activeTab === 'alarm' ? '#60a5fa' : styles.panel.labelColor,
+            }}
           >
             <Bell size={16} className="inline mr-2" />
-            闹钟
+            {t(settings.language, 'alarmTab')}
           </button>
           <button
             onClick={() => setActiveTab('countdown')}
             className={`flex-1 px-6 py-3 text-sm font-medium transition-all ${
               activeTab === 'countdown'
                 ? 'text-blue-400 border-b-2 border-blue-400'
-                : 'text-white/40 hover:text-white/60'
+                : 'hover:opacity-70'
             }`}
+            style={{
+              color: activeTab === 'countdown' ? '#60a5fa' : styles.panel.labelColor,
+            }}
           >
             <Timer size={16} className="inline mr-2" />
-            倒计时
+            {t(settings.language, 'countdownTab')}
           </button>
         </div>
 
@@ -160,12 +226,14 @@ export default function AlarmCountdownPanel() {
             <div className="space-y-4">
               {/* Alarm enabled toggle */}
               <div className="flex items-center justify-between">
-                <span className="text-sm text-white/70">启用闹钟</span>
+                <span className="text-sm" style={{ color: styles.panel.labelColor }}>
+                  {t(settings.language, 'alarmEnable')}
+                </span>
                 <button
                   onClick={() => updateSettings({ alarmEnabled: !settings.alarmEnabled })}
                   className="relative w-12 h-6 rounded-full transition-colors"
                   style={{
-                    background: settings.alarmEnabled ? '#3b82f6' : 'rgba(255,255,255,0.1)',
+                    background: settings.alarmEnabled ? '#3b82f6' : (isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)'),
                   }}
                 >
                   <div
@@ -179,19 +247,26 @@ export default function AlarmCountdownPanel() {
 
               {/* Alarm time */}
               <div className="space-y-2">
-                <label className="text-sm text-white/70">闹钟时间</label>
+                <label className="text-sm" style={{ color: styles.panel.labelColor }}>
+                  {t(settings.language, 'alarmTime')}
+                </label>
                 <input
                   type="time"
                   value={settings.alarmTime}
                   onChange={e => updateSettings({ alarmTime: e.target.value })}
-                  className="w-full bg-white/5 border border-white/10 rounded-md px-4 py-3 text-white/90 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors"
+                  className="w-full rounded-md px-4 py-3 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors"
+                  style={{
+                    background: styles.panel.inputBg,
+                    border: `1px solid ${styles.panel.inputBorder}`,
+                    color: styles.panel.textColor,
+                  }}
                 />
               </div>
 
               {settings.alarmEnabled && (
-                <div className="mt-4 p-3 rounded-md bg-blue-500/10 border border-blue-500/20">
-                  <p className="text-sm text-blue-400">
-                    闹钟将在 {settings.alarmTime} 响起
+                <div className="mt-4 p-3 rounded-md" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
+                  <p className="text-sm" style={{ color: '#60a5fa' }}>
+                    {t(settings.language, 'alarmWillRing').replace('{time}', settings.alarmTime)}
                   </p>
                 </div>
               )}
@@ -201,38 +276,59 @@ export default function AlarmCountdownPanel() {
               {/* Countdown time inputs */}
               <div className="grid grid-cols-3 gap-2">
                 <div className="space-y-2">
-                  <label className="text-sm text-white/70">时</label>
+                  <label className="text-sm" style={{ color: styles.panel.labelColor }}>
+                    {t(settings.language, 'countdownHours')}
+                  </label>
                   <input
                     type="number"
                     min="0"
                     max="23"
                     value={countdownHours}
                     onChange={e => setCountdownHours(Math.max(0, Math.min(23, Number(e.target.value))))}
-                    className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-white/90 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors text-center"
+                    className="w-full rounded-md px-3 py-2 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors text-center"
+                    style={{
+                      background: styles.panel.inputBg,
+                      border: `1px solid ${styles.panel.inputBorder}`,
+                      color: styles.panel.textColor,
+                    }}
                     disabled={countdownRunning}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm text-white/70">分</label>
+                  <label className="text-sm" style={{ color: styles.panel.labelColor }}>
+                    {t(settings.language, 'countdownMinutes')}
+                  </label>
                   <input
                     type="number"
                     min="0"
                     max="59"
                     value={countdownMinutes}
                     onChange={e => setCountdownMinutes(Math.max(0, Math.min(59, Number(e.target.value))))}
-                    className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-white/90 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors text-center"
+                    className="w-full rounded-md px-3 py-2 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors text-center"
+                    style={{
+                      background: styles.panel.inputBg,
+                      border: `1px solid ${styles.panel.inputBorder}`,
+                      color: styles.panel.textColor,
+                    }}
                     disabled={countdownRunning}
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm text-white/70">秒</label>
+                  <label className="text-sm" style={{ color: styles.panel.labelColor }}>
+                    {t(settings.language, 'countdownSeconds')}
+                  </label>
                   <input
                     type="number"
                     min="0"
                     max="59"
                     value={countdownSeconds}
                     onChange={e => setCountdownSeconds(Math.max(0, Math.min(59, Number(e.target.value))))}
-                    className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-white/90 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors text-center"
+                    className="w-full rounded-md px-3 py-2 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors text-center"
+                    style={{
+                      background: styles.panel.inputBg,
+                      border: `1px solid ${styles.panel.inputBorder}`,
+                      color: styles.panel.textColor,
+                    }}
                     disabled={countdownRunning}
                   />
                 </div>
@@ -241,11 +337,13 @@ export default function AlarmCountdownPanel() {
               {/* Countdown display */}
               {countdownRemaining > 0 && (
                 <div className="text-center py-6">
-                  <div className="text-5xl font-mono text-white/90 tabular-nums">
+                  <div className="text-5xl font-mono tabular-nums" style={{ color: styles.panel.textColor }}>
                     {formatCountdown(countdownRemaining)}
                   </div>
                   {!countdownRunning && countdownRemaining > 0 && (
-                    <div className="text-sm text-yellow-400 mt-2">已暂停</div>
+                    <div className="text-sm mt-2" style={{ color: '#fbbf24' }}>
+                      {t(settings.language, 'countdownPaused')}
+                    </div>
                   )}
                 </div>
               )}
@@ -255,27 +353,42 @@ export default function AlarmCountdownPanel() {
                 {!countdownRunning ? (
                   <button
                     onClick={handleStartCountdown}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-all active:scale-95 disabled:opacity-50"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md transition-all active:scale-95 disabled:opacity-50"
+                    style={{
+                      background: 'rgba(59,130,246,0.2)',
+                      border: '1px solid rgba(59,130,246,0.3)',
+                      color: '#60a5fa',
+                    }}
                     disabled={countdownRemaining > 0 && (countdownHours === 0 && countdownMinutes === 0 && countdownSeconds === 0)}
                   >
                     <Play size={16} />
-                    {countdownRemaining > 0 ? '继续' : '开始'}
+                    {countdownRemaining > 0 ? t(settings.language, 'countdownContinue') : t(settings.language, 'countdownStart')}
                   </button>
                 ) : (
                   <button
                     onClick={handlePauseCountdown}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/30 transition-all active:scale-95"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md transition-all active:scale-95"
+                    style={{
+                      background: 'rgba(251,191,36,0.2)',
+                      border: '1px solid rgba(251,191,36,0.3)',
+                      color: '#fbbf24',
+                    }}
                   >
                     <Pause size={16} />
-                    暂停
+                    {t(settings.language, 'countdownPause')}
                   </button>
                 )}
                 <button
                   onClick={handleResetCountdown}
-                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-md bg-white/5 border border-white/10 text-white/60 hover:bg-white/10 transition-all active:scale-95"
+                  className="flex items-center justify-center gap-2 px-4 py-3 rounded-md transition-all active:scale-95"
+                  style={{
+                    background: isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
+                    border: isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)',
+                    color: styles.panel.labelColor,
+                  }}
                 >
                   <RotateCcw size={16} />
-                  重置
+                  {t(settings.language, 'countdownReset')}
                 </button>
               </div>
             </div>
