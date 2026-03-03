@@ -236,8 +236,21 @@ function playAlarm(audioContext: AudioContext, duration: number): void {
  * 屏幕闪烁效果
  */
 export function screenFlash(bgColor: string, duration: number = 1.5, flashCount: number = 5): void {
-  const element = document.documentElement;
-  const originalBg = element.style.backgroundColor;
+  // 创建一个全屏闪烁覆盖层
+  const flashOverlay = document.createElement('div');
+  flashOverlay.id = 'screen-flash-overlay';
+  flashOverlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    pointer-events: none;
+    mix-blend-mode: screen;
+  `;
+  
+  document.body.appendChild(flashOverlay);
   
   // 检测背景颜色亮度
   const r = parseInt(bgColor.slice(1, 3), 16);
@@ -246,18 +259,18 @@ export function screenFlash(bgColor: string, duration: number = 1.5, flashCount:
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
   
   // 亮色背景闪烁为深色，深色背景闪烁为亮色
-  const flashColor = brightness > 128 ? '#000000' : '#ffffff';
+  const flashColor = brightness > 128 ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)';
   const flashInterval = (duration * 1000) / (flashCount * 2);
   
   let flashIndex = 0;
   const flashTimer = setInterval(() => {
     if (flashIndex >= flashCount * 2) {
       clearInterval(flashTimer);
-      element.style.backgroundColor = originalBg;
+      flashOverlay.remove();
       return;
     }
     
-    element.style.backgroundColor = flashIndex % 2 === 0 ? flashColor : originalBg;
+    flashOverlay.style.backgroundColor = flashIndex % 2 === 0 ? flashColor : 'transparent';
     flashIndex++;
   }, flashInterval);
 }
