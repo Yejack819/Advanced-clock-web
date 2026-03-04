@@ -35,8 +35,8 @@ export interface ClockSettings {
   countdownEnabled: boolean; // 倒计时是否启用
   countdownMinutes: number; // 倒计时分钟数
   showDateCountdown: boolean; // 是否显示日期倒计时
-  dateCountdownLabel: string; // 日期倒计时标签，最多4个汉字
-  dateCountdownTarget: string; // 日期倒计时目标日期，格式 YYYY-MM-DD
+  dateCountdownTargets: Array<{ id: string; label: string; date: string }>; // 多个日期倒计时目标
+  dateCountdownInterval: number; // 轮播切换间隔（秒），区间 3-30
   language: 'zh' | 'en'; // 语言设置：中文或英文
   countdownSound: SoundType; // 倒计时结束声音类型
 }
@@ -58,8 +58,10 @@ const DEFAULT_SETTINGS: ClockSettings = {
   countdownEnabled: false,
   countdownMinutes: 5,
   showDateCountdown: false,
-  dateCountdownLabel: '新年',
-  dateCountdownTarget: '2027-01-01',
+  dateCountdownInterval: 5,
+  dateCountdownTargets: [
+    { id: '1', label: '新年', date: '2027-01-01' },
+  ],
   language: 'zh',
   countdownSound: 'beep',
 };
