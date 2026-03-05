@@ -23,9 +23,10 @@ export default function ClockDisplay() {
   const { settings, countdownRemaining, countdownRunning } = useClock();
   const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, timezone, showDateCountdown, dateCountdownTargets, dateCountdownInterval, language } = settings;
   const [carouselIndex, setCarouselIndex] = useState(0);
-  // 'idle' = visible centered | 'exit' = sliding out left | 'enter-pre' = instant right offset (no transition) | 'enter' = sliding in to center
+  // 'idle' = visible centered | 'exit' = sliding out left/right | 'enter-pre' = instant offset (no transition) | 'enter' = sliding in to center
   const [carouselSlide, setCarouselSlide] = useState<'idle' | 'exit' | 'enter-pre' | 'enter'>('idle');
   const [displayedIndex, setDisplayedIndex] = useState(0);
+  const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left'); // track swipe direction
   const carouselTransitionDuration = Math.max(animationSpeed * 0.6, 0.25); // sync with clock animation speed
 
   // Carousel rotation for multiple date countdowns
@@ -41,10 +42,10 @@ export default function ClockDisplay() {
   useEffect(() => {
     if (carouselIndex === displayedIndex) return;
     const durationMs = carouselTransitionDuration * 1000;
-    // Phase 1: slide current item out to the left
+    // Phase 1: slide current item out in the direction opposite to slide direction
     setCarouselSlide('exit');
     const t1 = setTimeout(() => {
-      // Phase 2: instantly position new item to the right (no transition)
+      // Phase 2: instantly position new item in the opposite direction (no transition)
       setDisplayedIndex(carouselIndex);
       setCarouselSlide('enter-pre');
       // Phase 3: one rAF to ensure the browser paints the offset position first
@@ -59,7 +60,7 @@ export default function ClockDisplay() {
       });
     }, durationMs);
     return () => clearTimeout(t1);
-  }, [carouselIndex]);
+  }, [carouselIndex, carouselTransitionDuration]);
 
   // Get current carousel target (use displayedIndex for smooth animation)
   const currentTarget = showDateCountdown && dateCountdownTargets.length > 0
@@ -152,6 +153,7 @@ export default function ClockDisplay() {
           onClick={() => {
             // Allow clicking to cycle through targets
             if (dateCountdownTargets.length > 1) {
+              setSlideDirection('left'); // default to left for click
               setCarouselIndex(prev => (prev + 1) % dateCountdownTargets.length);
             }
           }}
@@ -168,10 +170,12 @@ export default function ClockDisplay() {
             
             if (Math.abs(diff) > 50) {
               if (diff > 0) {
-                // Swiped right: show previous
+                // Swiped right: show previous, animate from left to right
+                setSlideDirection('right');
                 setCarouselIndex(prev => (prev - 1 + dateCountdownTargets.length) % dateCountdownTargets.length);
               } else {
-                // Swiped left: show next
+                // Swiped left: show next, animate from right to left
+                setSlideDirection('left');
                 setCarouselIndex(prev => (prev + 1) % dateCountdownTargets.length);
               }
             }
@@ -213,9 +217,9 @@ export default function ClockDisplay() {
                 lineHeight: 1.5,
                 transform:
                   carouselSlide === 'exit'
-                    ? 'translateX(-80px)'
+                    ? slideDirection === 'left' ? 'translateX(-80px)' : 'translateX(80px)'
                     : carouselSlide === 'enter-pre'
-                    ? 'translateX(80px)'
+                    ? slideDirection === 'left' ? 'translateX(80px)' : 'translateX(-80px)'
                     : 'translateX(0)',
                 transition:
                   carouselSlide === 'idle' || carouselSlide === 'enter-pre'
