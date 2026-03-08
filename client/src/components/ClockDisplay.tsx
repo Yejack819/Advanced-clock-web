@@ -20,7 +20,7 @@ function padTwo(n: number): string {
 }
 
 export default function ClockDisplay() {
-  const { settings, countdownRemaining, countdownRunning } = useClock();
+  const { settings, countdownRemaining, countdownRunning, isFullscreen } = useClock();
   const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, timezone, showDateCountdown, dateCountdownTargets, dateCountdownInterval, language } = settings;
   const [carouselIndex, setCarouselIndex] = useState(0);
   // 'idle' = visible centered | 'exit' = sliding out left/right | 'enter-pre' = instant offset (no transition) | 'enter' = sliding in to center
@@ -170,8 +170,8 @@ export default function ClockDisplay() {
         '--clock-bg': bgColor,
       } as React.CSSProperties}
     >
-      {/* 右下角同步提示 */}
-      {showSyncHint && (
+      {/* 右下角同步提示 - 全屏时不显示 */}
+      {showSyncHint && !isFullscreen && (
         <div
           className="fixed bottom-4 right-4 pointer-events-none z-50"
           style={{
