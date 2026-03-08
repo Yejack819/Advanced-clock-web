@@ -97,7 +97,36 @@ export default function ClockDisplay() {
   };
 
   const [time, setTime] = useState(getTimeNow);
+  const [showSyncHint, setShowSyncHint] = useState(false); // 显示同步提示
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const syncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const syncIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // 30秒自动同步功能
+  useEffect(() => {
+    syncIntervalRef.current = setInterval(() => {
+      // 与标准时间同步
+      setTime(getTimeNow());
+      // 显示同步提示
+      setShowSyncHint(true);
+      // 2秒后隐藏提示
+      if (syncTimerRef.current) {
+        clearTimeout(syncTimerRef.current);
+      }
+      syncTimerRef.current = setTimeout(() => {
+        setShowSyncHint(false);
+      }, 2000);
+    }, 30000); // 每30秒同步一次
+
+    return () => {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current);
+      }
+      if (syncTimerRef.current) {
+        clearTimeout(syncTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const tick = () => {
@@ -136,11 +165,34 @@ export default function ClockDisplay() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center select-none"
+      className="flex flex-col items-center justify-center select-none relative"
       style={{
         '--clock-bg': bgColor,
       } as React.CSSProperties}
     >
+      {/* 右下角同步提示 */}
+      {showSyncHint && (
+        <div
+          className="fixed bottom-4 right-4 pointer-events-none z-50"
+          style={{
+            animation: 'fadeInOut 2s ease-in-out',
+            fontSize: '12px',
+            color: fontColor,
+            opacity: 0.6,
+            textAlign: 'center',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <style>{`
+            @keyframes fadeInOut {
+              0% { opacity: 0.2; }
+              50% { opacity: 0.8; }
+              100% { opacity: 0.2; }
+            }
+          `}</style>
+          <div>⟲ {language === 'zh' ? '时间已同步' : 'Time Synced'}</div>
+        </div>
+      )}
       {/* Date countdown display with carousel slide animation and side fade masks */}
       {showDateCountdown && currentTarget && daysUntil >= 0 && (
         <div
