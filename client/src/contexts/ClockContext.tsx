@@ -29,7 +29,8 @@ export interface ClockSettings {
   lineHeight: number; // 整体高度调整，百分比 (50-150)
   letterSpacing: number; // 数字左右间距，像素值 (-20 to 50)
   animationSpeed: number; // 动画速度，秒 (0.3-1.0)
-  timezone: string; // 时区，例如 'Asia/Shanghai', 'America/New_York'
+  utcOffset: number; // UTC偏移量，例如 +8 表示 UTC+8，-5 表示 UTC-5
+  dateFontRatio: number; // 日期字体大小分母，日期字体 = 时钟字体 / dateFontRatio，范围 2-10
   alarmEnabled: boolean; // 闹钟是否启用
   alarmTime: string; // 闹钟时间，格式 HH:mm
   countdownEnabled: boolean; // 倒计时是否启用
@@ -52,7 +53,8 @@ const DEFAULT_SETTINGS: ClockSettings = {
   lineHeight: 100,
   letterSpacing: 0,
   animationSpeed: 0.5,
-  timezone: 'Asia/Shanghai',
+  utcOffset: 8,
+  dateFontRatio: 3,
   alarmEnabled: false,
   alarmTime: '08:00',
   countdownEnabled: false,
@@ -84,8 +86,6 @@ interface ClockContextType {
   startCountdown: (minutes: number) => void;
   pauseCountdown: () => void;
   resetCountdown: () => void;
-  exportConfig: () => void;
-  importConfig: (file: File) => Promise<void>;
   applyTheme: (theme: 'cyberpunk' | 'minimal' | 'retro') => void;
   countdownFinished: boolean; // 倒计时是否刚刚结束
   setCountdownFinished: (v: boolean) => void;
@@ -229,28 +229,6 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener('fullscreenchange', handler);
   }, []);
 
-  const exportConfig = useCallback(() => {
-    const dataStr = JSON.stringify(settings, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `clock-config-${new Date().toISOString().split('T')[0]}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
-  }, [settings]);
-
-  const importConfig = useCallback(async (file: File) => {
-    try {
-      const text = await file.text();
-      const imported = JSON.parse(text) as Partial<ClockSettings>;
-      updateSettings(imported);
-    } catch (e) {
-      console.error('Failed to import config:', e);
-      throw new Error('Invalid configuration file');
-    }
-  }, [updateSettings]);
-
   const applyTheme = useCallback((theme: 'cyberpunk' | 'minimal' | 'retro') => {
     const themes = {
       cyberpunk: {
@@ -289,8 +267,6 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       startCountdown,
       pauseCountdown,
       resetCountdown,
-      exportConfig,
-      importConfig,
       applyTheme,
       countdownFinished,
       setCountdownFinished,

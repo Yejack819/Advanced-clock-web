@@ -21,7 +21,7 @@ function padTwo(n: number): string {
 
 export default function ClockDisplay() {
   const { settings, countdownRemaining, countdownRunning, isFullscreen } = useClock();
-  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, timezone, showDateCountdown, dateCountdownTargets, dateCountdownInterval, language } = settings;
+  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, utcOffset, dateFontRatio, showDateCountdown, dateCountdownTargets, dateCountdownInterval, language } = settings;
   const [carouselIndex, setCarouselIndex] = useState(0);
   // 'idle' = visible centered | 'exit' = sliding out left/right | 'enter-pre' = instant offset (no transition) | 'enter' = sliding in to center
   const [carouselSlide, setCarouselSlide] = useState<'idle' | 'exit' | 'enter-pre' | 'enter'>('idle');
@@ -82,17 +82,29 @@ export default function ClockDisplay() {
 
   const getTimeNow = () => {
     const now = new Date(Date.now() + calibrationOffset);
-    const localTime = timezone && timezone !== 'local' 
-      ? new Date(now.toLocaleString('en-US', { timeZone: timezone }))
-      : now;
+    // Calculate time based on UTC offset
+    const utcHours = now.getUTCHours();
+    const utcMinutes = now.getUTCMinutes();
+    const utcSeconds = now.getUTCSeconds();
+    
+    // Apply offset (could be positive or negative)
+    let totalMinutes = (utcHours + utcOffset) * 60 + utcMinutes;
+    // Handle wrapping (could span days, but for display purposes we just wrap hours)
+    const adjustedHours = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60) / 60;
+    const adjustedMinutes = totalMinutes % 60;
+    
+    // Create a date object for date display with offset applied
+    const offsetDate = new Date(now);
+    offsetDate.setUTCHours(utcHours + utcOffset, utcMinutes, utcSeconds, 0);
+    
     return {
-      hours: padTwo(localTime.getHours()),
-      minutes: padTwo(localTime.getMinutes()),
-      seconds: hideSeconds ? '00' : padTwo(localTime.getSeconds()),
-      year: localTime.getFullYear(),
-      month: localTime.getMonth() + 1,
-      day: localTime.getDate(),
-      weekday: localTime.getDay(),
+      hours: padTwo(Math.floor(adjustedHours)),
+      minutes: padTwo(Math.abs(Math.floor(adjustedMinutes))),
+      seconds: hideSeconds ? '00' : padTwo(utcSeconds),
+      year: offsetDate.getFullYear(),
+      month: offsetDate.getMonth() + 1,
+      day: offsetDate.getDate(),
+      weekday: offsetDate.getDay(),
     };
   };
 
@@ -137,9 +149,9 @@ export default function ClockDisplay() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [calibrationOffset, hideSeconds, showDate, timezone]);
+  }, [calibrationOffset, hideSeconds, showDate, utcOffset]);
 
-  const dateFontSize = fontSize / 3;
+  const dateFontSize = fontSize / dateFontRatio;
   const digitHeight = fontSize * 1.15;
   const dateHeight = digitHeight * (lineHeight / 100);
 

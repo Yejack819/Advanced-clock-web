@@ -25,17 +25,21 @@ import {
   Crosshair,
   Clock,
   Maximize2,
-  Download,
-  Upload,
   Palette as PaletteIcon,
   Bell,
   Globe,
 } from 'lucide-react';
 
 export default function ControlBar() {
-  const { settings, updateSettings, isFullscreen, toggleFullscreen, setShowCalibration, showCalibration, setShowAlarmCountdown, showAlarmCountdown, showDateCountdownPanel, setShowDateCountdownPanel, exportConfig, importConfig, applyTheme } = useClock();
-  const [expanded, setExpanded] = useState(true);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const { settings, updateSettings, isFullscreen, toggleFullscreen, setShowCalibration, showCalibration, setShowAlarmCountdown, showAlarmCountdown, showDateCountdownPanel, setShowDateCountdownPanel, applyTheme } = useClock();
+  const [expanded, setExpanded] = useState(false);
+  
+  // 退出全屏时自动收起
+  React.useEffect(() => {
+    if (!isFullscreen) {
+      setExpanded(false);
+    }
+  }, [isFullscreen]);
   
   // 检测背景颜色亮度
   const isLightBackground = React.useMemo(() => {
@@ -100,17 +104,6 @@ export default function ControlBar() {
   const buttonStyle = styles.toggleButton;
   const panelStyle = styles.panel;
 
-  // 时区选项
-  const timezoneOptions = [
-    { value: 'Asia/Shanghai', label: t(settings.language, 'shanghai'), utc: 'UTC+8' },
-    { value: 'Asia/Tokyo', label: t(settings.language, 'tokyo'), utc: 'UTC+9' },
-    { value: 'America/New_York', label: t(settings.language, 'newyork'), utc: 'UTC-5' },
-    { value: 'America/Los_Angeles', label: t(settings.language, 'losangeles'), utc: 'UTC-8' },
-    { value: 'Europe/London', label: t(settings.language, 'london'), utc: 'UTC+0' },
-    { value: 'Europe/Paris', label: t(settings.language, 'paris'), utc: 'UTC+1' },
-    { value: 'Australia/Sydney', label: t(settings.language, 'sydney'), utc: 'UTC+11' },
-  ];
-
   return (
     <div className="control-bar fixed bottom-0 left-0 right-0 z-50">
       {/* Toggle button - always visible */}
@@ -172,9 +165,33 @@ export default function ControlBar() {
                     background: 'rgba(255,255,255,0.08)',
                   }}
                 />
-                <span className="text-xs w-14 text-right font-mono tabular-nums" style={{ color: panelStyle.textColor }}>
-                  {settings.fontSize}px
-                </span>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="100"
+                    max="500"
+                    step="10"
+                    value={settings.fontSize}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      if (val >= 100 && val <= 500) {
+                        updateSettings({ fontSize: val });
+                      }
+                    }}
+                    onBlur={e => {
+                      const val = Number(e.target.value);
+                      if (val < 100) updateSettings({ fontSize: 100 });
+                      if (val > 500) updateSettings({ fontSize: 500 });
+                    }}
+                    className="w-14 px-1.5 py-0.5 text-xs font-mono tabular-nums text-right rounded border outline-none focus:border-blue-500/40 transition-colors"
+                    style={{
+                      background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                      border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                      color: panelStyle.textColor,
+                    }}
+                  />
+                  <span className="text-xs" style={{ color: panelStyle.textColor }}>px</span>
+                </div>
               </div>
             </ControlGroup>
 
@@ -194,9 +211,33 @@ export default function ControlBar() {
                     background: isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
                   }}
                 />
-                <span className="text-xs w-14 text-right font-mono tabular-nums" style={{ color: panelStyle.textColor }}>
-                  {settings.animationSpeed.toFixed(1)}s
-                </span>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="0.3"
+                    max="1.0"
+                    step="0.1"
+                    value={settings.animationSpeed.toFixed(1)}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      if (val >= 0.3 && val <= 1.0) {
+                        updateSettings({ animationSpeed: val });
+                      }
+                    }}
+                    onBlur={e => {
+                      const val = Number(e.target.value);
+                      if (val < 0.3) updateSettings({ animationSpeed: 0.3 });
+                      if (val > 1.0) updateSettings({ animationSpeed: 1.0 });
+                    }}
+                    className="w-14 px-1.5 py-0.5 text-xs font-mono tabular-nums text-right rounded border outline-none focus:border-blue-500/40 transition-colors"
+                    style={{
+                      background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                      border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                      color: panelStyle.textColor,
+                    }}
+                  />
+                  <span className="text-xs" style={{ color: panelStyle.textColor }}>s</span>
+                </div>
               </div>
             </ControlGroup>
 
@@ -216,30 +257,64 @@ export default function ControlBar() {
                     background: isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
                   }}
                 />
-                <span className="text-xs w-14 text-right font-mono tabular-nums" style={{ color: panelStyle.textColor }}>
-                  {settings.letterSpacing}px
-                </span>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    min="-20"
+                    max="50"
+                    step="1"
+                    value={settings.letterSpacing}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      if (val >= -20 && val <= 50) {
+                        updateSettings({ letterSpacing: val });
+                      }
+                    }}
+                    onBlur={e => {
+                      const val = Number(e.target.value);
+                      if (val < -20) updateSettings({ letterSpacing: -20 });
+                      if (val > 50) updateSettings({ letterSpacing: 50 });
+                    }}
+                    className="w-14 px-1.5 py-0.5 text-xs font-mono tabular-nums text-right rounded border outline-none focus:border-blue-500/40 transition-colors"
+                    style={{
+                      background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                      border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                      color: panelStyle.textColor,
+                    }}
+                  />
+                  <span className="text-xs" style={{ color: panelStyle.textColor }}>px</span>
+                </div>
               </div>
             </ControlGroup>
 
-            {/* Timezone */}
-            <ControlGroup icon={<Clock size={14} />} label={t(settings.language, 'timezone')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
-              <select
-                value={settings.timezone}
-                onChange={e => updateSettings({ timezone: e.target.value })}
-                className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:border-blue-500/40 transition-colors appearance-none active:scale-95"
-                style={{
-                  background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
-                  border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
-                  color: panelStyle.textColor,
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${isLightBackground ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
-              >
-                {timezoneOptions.map(tz => (
-                  <option key={tz.value} value={tz.value} style={{ background: '#141414', color: '#ccc' }}>
-                    {tz.label} ({tz.utc})
-                  </option>
-                ))}
-              </select>
+            {/* UTC Offset */}
+            <ControlGroup icon={<Globe size={14} />} label={t(settings.language, 'timezone')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+              <div className="flex items-center gap-2">
+                <span className="text-xs" style={{ color: panelStyle.textColor }}>UTC</span>
+                <input
+                  type="number"
+                  min="-14"
+                  max="14"
+                  value={settings.utcOffset}
+                  onChange={e => {
+                    const val = Number(e.target.value);
+                    if (val >= -14 && val <= 14) {
+                      updateSettings({ utcOffset: val });
+                    }
+                  }}
+                  onBlur={e => {
+                    const val = Number(e.target.value);
+                    if (val < -14) updateSettings({ utcOffset: -14 });
+                    if (val > 14) updateSettings({ utcOffset: 14 });
+                  }}
+                  className="w-16 px-2 py-1.5 text-xs font-mono tabular-nums text-center rounded border outline-none focus:border-blue-500/40 transition-colors"
+                  style={{
+                    background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                    border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                    color: panelStyle.textColor,
+                  }}
+                />
+              </div>
             </ControlGroup>
 
             {/* Font Family */}
@@ -339,6 +414,37 @@ export default function ControlBar() {
               </div>
             </ControlGroup>
 
+            {/* Date Font Ratio */}
+            <ControlGroup icon={<Type size={14} />} label={t(settings.language, 'dateFontRatio')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-mono" style={{ color: panelStyle.textColor }}>1/</span>
+                <input
+                  type="number"
+                  min="2"
+                  max="10"
+                  step="1"
+                  value={settings.dateFontRatio}
+                  onChange={e => {
+                    const val = Number(e.target.value);
+                    if (val >= 2 && val <= 10) {
+                      updateSettings({ dateFontRatio: val });
+                    }
+                  }}
+                  onBlur={e => {
+                    const val = Number(e.target.value);
+                    if (val < 2) updateSettings({ dateFontRatio: 2 });
+                    if (val > 10) updateSettings({ dateFontRatio: 10 });
+                  }}
+                  className="w-14 px-2 py-1.5 text-xs font-mono tabular-nums text-center rounded border outline-none focus:border-blue-500/40 transition-colors"
+                  style={{
+                    background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                    border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                    color: panelStyle.textColor,
+                  }}
+                />
+              </div>
+            </ControlGroup>
+
             {/* Actions */}
             <ControlGroup icon={<Maximize size={14} />} label={t(settings.language, 'actions')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex flex-col gap-2">
@@ -414,31 +520,6 @@ export default function ControlBar() {
                 >
                   English
                 </button>
-              </div>
-            </ControlGroup>
-
-            {/* Config Management */}
-            <ControlGroup icon={<Download size={14} />} label={t(settings.language, 'config')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
-              <div className="flex flex-col gap-2">
-                <ActionButton
-                  icon={<Download size={14} />}
-                  label={t(settings.language, 'exportConfig')}
-                  onClick={exportConfig}
-                  isLightBackground={isLightBackground}
-                />
-                <ActionButton
-                  icon={<Upload size={14} />}
-                  label={t(settings.language, 'importConfig')}
-                  onClick={() => fileInputRef.current?.click()}
-                  isLightBackground={isLightBackground}
-                />
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".json"
-                  onChange={(e) => { const file = e.currentTarget.files?.[0]; if (file) importConfig(file); }}
-                  style={{ display: 'none' }}
-                />
               </div>
             </ControlGroup>
 
