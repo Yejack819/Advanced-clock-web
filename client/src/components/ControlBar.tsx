@@ -416,32 +416,23 @@ export default function ControlBar() {
 
             {/* Date Font Ratio */}
             <ControlGroup icon={<Type size={14} />} label={t(settings.language, 'dateFontRatio')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-mono" style={{ color: panelStyle.textColor }}>1/</span>
+              <div className="flex items-center gap-3">
                 <input
-                  type="number"
+                  type="range"
                   min="2"
                   max="10"
                   step="1"
                   value={settings.dateFontRatio}
-                  onChange={e => {
-                    const val = Number(e.target.value);
-                    if (val >= 2 && val <= 10) {
-                      updateSettings({ dateFontRatio: val });
-                    }
-                  }}
-                  onBlur={e => {
-                    const val = Number(e.target.value);
-                    if (val < 2) updateSettings({ dateFontRatio: 2 });
-                    if (val > 10) updateSettings({ dateFontRatio: 10 });
-                  }}
-                  className="w-14 px-2 py-1.5 text-xs font-mono tabular-nums text-center rounded border outline-none focus:border-blue-500/40 transition-colors"
+                  onChange={e => updateSettings({ dateFontRatio: Number(e.target.value) })}
+                  className="flex-1 h-1.5 rounded-full appearance-none cursor-pointer"
                   style={{
-                    background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
-                    border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
-                    color: panelStyle.textColor,
+                    accentColor: '#3b82f6',
+                    background: isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.08)',
                   }}
                 />
+                <span className="text-xs w-10 text-right font-mono tabular-nums" style={{ color: panelStyle.textColor }}>
+                  1/{settings.dateFontRatio}
+                </span>
               </div>
             </ControlGroup>
 
