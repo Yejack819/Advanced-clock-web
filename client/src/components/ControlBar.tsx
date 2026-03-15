@@ -331,7 +331,7 @@ export default function ControlBar() {
               >
                 {FONT_OPTIONS.map(f => (
                   <option key={f.value} value={f.value} style={{ background: '#141414', color: '#ccc' }}>
-                    {f.label}
+                    {settings.language === 'zh' ? f.labelZh : f.label}
                   </option>
                 ))}
               </select>

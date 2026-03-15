@@ -1,21 +1,26 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { SoundType } from '@/lib/soundManager';
 
-// Available font options
+// Available font options with Chinese names
 export const FONT_OPTIONS = [
-  { label: 'JetBrains Mono', value: "'JetBrains Mono', monospace" },
-  { label: 'Roboto Mono', value: "'Roboto Mono', monospace" },
-  { label: 'Fira Code', value: "'Fira Code', monospace" },
-  { label: 'Source Code Pro', value: "'Source Code Pro', monospace" },
-  { label: 'IBM Plex Mono', value: "'IBM Plex Mono', monospace" },
-  { label: 'Courier Prime', value: "'Courier Prime', monospace" },
-  { label: 'Orbitron', value: "'Orbitron', sans-serif" },
-  { label: 'Share Tech Mono', value: "'Share Tech Mono', monospace" },
-  { label: 'Oswald', value: "'Oswald', sans-serif" },
-  { label: 'Anton', value: "'Anton', sans-serif" },
-  { label: 'Bebas Neue', value: "'Bebas Neue', sans-serif" },
-  { label: 'Playfair Display', value: "'Playfair Display', serif" },
-  { label: 'Lora', value: "'Lora', serif" },
+  // 等宽字体 (保留5个)
+  { label: 'JetBrains Mono', labelZh: '等宽JetBrains', value: "'JetBrains Mono', monospace", category: 'monospace' },
+  { label: 'Roboto Mono', labelZh: '等宽Roboto', value: "'Roboto Mono', monospace", category: 'monospace' },
+  { label: 'Fira Code', labelZh: '等宽Fira', value: "'Fira Code', monospace", category: 'monospace' },
+  { label: 'Source Code Pro', labelZh: '等宽Source', value: "'Source Code Pro', monospace", category: 'monospace' },
+  { label: 'Share Tech Mono', labelZh: '科技等宽', value: "'Share Tech Mono', monospace", category: 'monospace' },
+  // 无衬线字体
+  { label: 'Orbitron', labelZh: '未来科技', value: "'Orbitron', sans-serif", category: 'sans-serif' },
+  { label: 'Oswald', labelZh: '粗体现代', value: "'Oswald', sans-serif", category: 'sans-serif' },
+  { label: 'Anton', labelZh: '醒目粗体', value: "'Anton', sans-serif", category: 'sans-serif' },
+  { label: 'Bebas Neue', labelZh: '时尚窄体', value: "'Bebas Neue', sans-serif", category: 'sans-serif' },
+  // 衬线字体
+  { label: 'Playfair Display', labelZh: '衬线Playfair', value: "'Playfair Display', serif", category: 'serif' },
+  { label: 'Lora', labelZh: '衬线Lora', value: "'Lora', serif", category: 'serif' },
+  // 中文字体
+  { label: 'Noto Sans SC', labelZh: '思源黑体', value: "'Noto Sans SC', sans-serif", category: 'chinese' },
+  { label: 'Noto Serif SC', labelZh: '思源宋体', value: "'Noto Serif SC', serif", category: 'chinese' },
+  { label: 'LXGW WenKai', labelZh: '霞鹜文楷', value: "'LXGW WenKai', serif", category: 'chinese' },
 ];
 
 export interface ClockSettings {
