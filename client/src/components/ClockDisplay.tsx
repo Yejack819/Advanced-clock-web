@@ -82,29 +82,19 @@ export default function ClockDisplay() {
 
   const getTimeNow = () => {
     const now = new Date(Date.now() + calibrationOffset);
-    // Calculate time based on UTC offset
-    const utcHours = now.getUTCHours();
-    const utcMinutes = now.getUTCMinutes();
-    const utcSeconds = now.getUTCSeconds();
-    
-    // Apply offset (could be positive or negative)
-    let totalMinutes = (utcHours + utcOffset) * 60 + utcMinutes;
-    // Handle wrapping (could span days, but for display purposes we just wrap hours)
-    const adjustedHours = ((totalMinutes % (24 * 60)) + (24 * 60)) % (24 * 60) / 60;
-    const adjustedMinutes = totalMinutes % 60;
-    
-    // Create a date object for date display with offset applied
-    const offsetDate = new Date(now);
-    offsetDate.setUTCHours(utcHours + utcOffset, utcMinutes, utcSeconds, 0);
+    // Get UTC timestamp and add offset
+    const utcTime = now.getTime();
+    const offsetTime = utcTime + (utcOffset * 60 * 60 * 1000);
+    const offsetDate = new Date(offsetTime);
     
     return {
-      hours: padTwo(Math.floor(adjustedHours)),
-      minutes: padTwo(Math.abs(Math.floor(adjustedMinutes))),
-      seconds: hideSeconds ? '00' : padTwo(utcSeconds),
-      year: offsetDate.getFullYear(),
-      month: offsetDate.getMonth() + 1,
-      day: offsetDate.getDate(),
-      weekday: offsetDate.getDay(),
+      hours: padTwo(offsetDate.getUTCHours()),
+      minutes: padTwo(offsetDate.getUTCMinutes()),
+      seconds: hideSeconds ? '00' : padTwo(offsetDate.getUTCSeconds()),
+      year: offsetDate.getUTCFullYear(),
+      month: offsetDate.getUTCMonth() + 1,
+      day: offsetDate.getUTCDate(),
+      weekday: offsetDate.getUTCDay(),
     };
   };
 
