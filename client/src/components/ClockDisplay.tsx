@@ -82,19 +82,49 @@ export default function ClockDisplay() {
 
   const getTimeNow = () => {
     const now = new Date(Date.now() + calibrationOffset);
-    // Get UTC timestamp and add offset
-    const utcTime = now.getTime();
-    const offsetTime = utcTime + (utcOffset * 60 * 60 * 1000);
-    const offsetDate = new Date(offsetTime);
+    // 使用 UTC 方法直接获取 UTC 时间，然后加上偏移
+    const utcHours = now.getUTCHours();
+    const utcMinutes = now.getUTCMinutes();
+    const utcSeconds = now.getUTCSeconds();
+    const utcYear = now.getUTCFullYear();
+    const utcMonth = now.getUTCMonth();
+    const utcDate = now.getUTCDate();
+    const utcDay = now.getUTCDay();
+    
+    // 计算偏移后的总分钟数
+    let totalMinutes = (utcHours + utcOffset) * 60 + utcMinutes;
+    
+    // 计算天数偏移（可能为正或负）
+    let dayOffset = 0;
+    if (totalMinutes < 0) {
+      dayOffset = -1;
+      totalMinutes += 24 * 60;
+    } else if (totalMinutes >= 24 * 60) {
+      dayOffset = 1;
+      totalMinutes -= 24 * 60;
+    }
+    
+    // 计算偏移后的小时和分钟
+    const adjustedHours = Math.floor(totalMinutes / 60);
+    const adjustedMinutes = totalMinutes % 60;
+    
+    // 计算偏移后的日期
+    const adjustedDate = new Date(Date.UTC(utcYear, utcMonth, utcDate));
+    adjustedDate.setUTCDate(adjustedDate.getUTCDate() + dayOffset);
+    
+    // 计算偏移后的星期
+    let adjustedDay = utcDay + dayOffset;
+    if (adjustedDay < 0) adjustedDay = 6;
+    if (adjustedDay > 6) adjustedDay = 0;
     
     return {
-      hours: padTwo(offsetDate.getUTCHours()),
-      minutes: padTwo(offsetDate.getUTCMinutes()),
-      seconds: hideSeconds ? '00' : padTwo(offsetDate.getUTCSeconds()),
-      year: offsetDate.getUTCFullYear(),
-      month: offsetDate.getUTCMonth() + 1,
-      day: offsetDate.getUTCDate(),
-      weekday: offsetDate.getUTCDay(),
+      hours: padTwo(adjustedHours),
+      minutes: padTwo(adjustedMinutes),
+      seconds: hideSeconds ? '00' : padTwo(utcSeconds),
+      year: adjustedDate.getUTCFullYear(),
+      month: adjustedDate.getUTCMonth() + 1,
+      day: adjustedDate.getUTCDate(),
+      weekday: adjustedDay,
     };
   };
 
