@@ -83,27 +83,19 @@ export default function ClockDisplay() {
   const getTimeNow = () => {
     const now = new Date(Date.now() + calibrationOffset);
     
-    // 获取本地时区偏移（分钟）， getTimezoneOffset 返回 UTC - 本地时间（分钟）
-    const localOffsetMinutes = -now.getTimezoneOffset();
+    // 获取 UTC 时间戳，加上时区偏移（小时 -> 毫秒）
+    const targetMs = now.getTime() + utcOffset * 60 * 60 * 1000;
+    const targetDate = new Date(targetMs);
     
-    // 计算从本地时区到目标时区需要的总偏移（毫秒）
-    // 目标偏移 = UTC偏移（小时），本地偏移 = localOffsetMinutes（分钟）
-    // 需要调整的量 = (目标UTC偏移 - 本地UTC偏移) * 小时毫秒数
-    const targetOffsetMs = utcOffset * 60 * 60 * 1000; // 目标时区偏移（毫秒）
-    const localOffsetMs = localOffsetMinutes * 60 * 1000; // 本地时区偏移（毫秒）
-    const adjustMs = targetOffsetMs - localOffsetMs; // 需要调整的毫秒数
-    
-    // 调整时间
-    const adjustedTime = new Date(now.getTime() + adjustMs);
-    
+    // 使用 UTC 方法获取结果，避免本地时区干扰
     return {
-      hours: padTwo(adjustedTime.getHours()),
-      minutes: padTwo(adjustedTime.getMinutes()),
-      seconds: hideSeconds ? '00' : padTwo(adjustedTime.getSeconds()),
-      year: adjustedTime.getFullYear(),
-      month: adjustedTime.getMonth() + 1,
-      day: adjustedTime.getDate(),
-      weekday: adjustedTime.getDay(),
+      hours: padTwo(targetDate.getUTCHours()),
+      minutes: padTwo(targetDate.getUTCMinutes()),
+      seconds: hideSeconds ? '00' : padTwo(targetDate.getUTCSeconds()),
+      year: targetDate.getUTCFullYear(),
+      month: targetDate.getUTCMonth() + 1,
+      day: targetDate.getUTCDate(),
+      weekday: targetDate.getUTCDay(),
     };
   };
 
