@@ -334,7 +334,6 @@ export default function ClockDisplay() {
             marginBottom: isCompactMode ? `${fontSize * 0.02}px` : `${fontSize * 0.05}px`,
           }}
         >
-        >
           {dateCountdownTargets.map((_, idx) => (
             <div
               key={idx}
