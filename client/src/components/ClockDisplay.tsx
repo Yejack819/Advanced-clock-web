@@ -154,6 +154,9 @@ export default function ClockDisplay() {
   const dateFontSize = fontSize / dateFontRatio;
   const digitHeight = fontSize * 1.15;
   const dateHeight = digitHeight * (lineHeight / 100);
+  
+  // 当日期和日期倒计时都显示时，使用更紧凑的间距
+  const isCompactMode = showDate && showDateCountdown && currentTarget && daysUntil >= 0;
 
   // Get date display text based on language and format
   const getDateDisplayText = () => {
@@ -222,7 +225,7 @@ export default function ClockDisplay() {
         <div
           style={{
             position: 'relative',
-            marginBottom: `${fontSize * 0.08}px`,
+            marginBottom: isCompactMode ? `${fontSize * 0.03}px` : `${fontSize * 0.08}px`,
             cursor: dateCountdownTargets.length > 1 ? 'grab' : 'default',
             userSelect: 'none',
           }}
@@ -328,8 +331,9 @@ export default function ClockDisplay() {
         <div
           className="flex gap-1 items-center justify-center"
           style={{
-            marginBottom: `${fontSize * 0.05}px`,
+            marginBottom: isCompactMode ? `${fontSize * 0.02}px` : `${fontSize * 0.05}px`,
           }}
+        >
         >
           {dateCountdownTargets.map((_, idx) => (
             <div
@@ -356,7 +360,7 @@ export default function ClockDisplay() {
             fontSize: `${dateFontSize}px`,
             color: fontColor,
             height: `${dateFontSize}px`,
-            marginBottom: `${fontSize * 0.12}px`,
+            marginBottom: isCompactMode ? `${fontSize * 0.06}px` : `${fontSize * 0.12}px`,
             letterSpacing: '0.1em',
             opacity: 0.75,
             fontWeight: 300,
