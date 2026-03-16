@@ -28,17 +28,6 @@ export default function ClockDisplay() {
   const [displayedIndex, setDisplayedIndex] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('left'); // track swipe direction
   const carouselTransitionDuration = Math.max(animationSpeed * 0.6, 0.25); // sync with clock animation speed
-  
-  // 初始加载动画状态
-  const [isLoaded, setIsLoaded] = useState(false);
-  
-  // 页面加载时的模糊到清晰动画
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 100); // 100ms 后开始动画
-    return () => clearTimeout(timer);
-  }, []);
 
   // Carousel rotation for multiple date countdowns
   useEffect(() => {
@@ -194,16 +183,28 @@ export default function ClockDisplay() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center select-none relative"
+      className="flex flex-col items-center justify-center select-none relative clock-load-animation"
       style={{
         '--clock-bg': bgColor,
-        filter: isLoaded ? 'blur(0px)' : 'blur(20px)',
-        opacity: isLoaded ? 1 : 0,
-        transition: 'filter 0.8s ease-out, opacity 0.8s ease-out',
       } as React.CSSProperties}
     >
       {/* 加载动画的 CSS */}
       <style>{`
+        @keyframes clockFadeIn {
+          0% {
+            filter: blur(20px);
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          100% {
+            filter: blur(0px);
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+        .clock-load-animation {
+          animation: clockFadeIn 0.8s ease-out forwards;
+        }
         @keyframes fadeInOut {
           0% { opacity: 0.2; }
           50% { opacity: 0.8; }
