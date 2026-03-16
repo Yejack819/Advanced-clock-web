@@ -166,13 +166,25 @@ export default function ClockDisplay() {
     return formatCountdown(language, daysUntil, currentTarget.label);
   };
 
-  // Get date font family based on language
+  // Get date font family based on language and selected font
   const getDateFontFamily = () => {
-    if (language === 'en') {
-      return fontFamily; // Use the selected font for English
-    } else {
-      return "'Noto Sans SC', system-ui, sans-serif"; // Use Noto Sans SC for Chinese
+    // 检查是否选中了中文字体
+    const isChineseFont = fontFamily.includes('Noto Sans SC') || 
+                          fontFamily.includes('Noto Serif SC') || 
+                          fontFamily.includes('LXGW WenKai');
+    
+    // 如果选中了中文字体，日期和倒计时都使用设置的字体
+    if (isChineseFont) {
+      return fontFamily;
     }
+    
+    // 如果语言是中文但未选中中文字体，使用 Noto Sans SC
+    if (language === 'zh') {
+      return "'Noto Sans SC', system-ui, sans-serif";
+    }
+    
+    // 英文使用设置的字体
+    return fontFamily;
   };
 
   return (
