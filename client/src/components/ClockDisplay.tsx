@@ -81,21 +81,67 @@ export default function ClockDisplay() {
   const daysUntil = calculateDaysUntil();
 
   const getTimeNow = () => {
-    const now = new Date(Date.now() + calibrationOffset);
+    // 1. 获取本地时间
+    const localNow = new Date(Date.now() + calibrationOffset);
     
-    // 获取 UTC 时间戳，加上时区偏移（小时 -> 毫秒）
-    const targetMs = now.getTime() + utcOffset * 60 * 60 * 1000;
-    const targetDate = new Date(targetMs);
+    // 2. 计算本地时区偏移（分钟）
+    // getTimezoneOffset() 返回 UTC - 本地时间（分钟）
+    // 例如：北京时间 UTC+8，返回 -480（即 -8小时）
+    const localOffsetMinutes = localNow.getTimezoneOffset();
     
-    // 使用 UTC 方法获取结果，避免本地时区干扰
+    // 3. 计算本地时间相对于 UTC 的实际偏移（小时）
+    // 北京时间 UTC+8，localOffsetMinutes = -480，所以 localOffsetHours = 8
+    const localOffsetHours = -localOffsetMinutes / 60;
+    
+    // 4. 获取本地时间的各个分量
+    const localHours = localNow.getHours();
+    const localMinutes = localNow.getMinutes();
+    const localSeconds = localNow.getSeconds();
+    const localYear = localNow.getFullYear();
+    const localMonth = localNow.getMonth();
+    const localDate = localNow.getDate();
+    const localDay = localNow.getDay();
+    
+    // 5. 计算从本地时区到目标时区需要的偏移（小时）
+    // 目标UTC偏移 - 本地UTC偏移 = 需要调整的小时数
+    const adjustHours = utcOffset - localOffsetHours;
+    
+    // 6. 计算调整后的总分钟数
+    let totalMinutes = (localHours + adjustHours) * 60 + localMinutes;
+    
+    // 7. 处理跨天情况
+    let dayOffset = 0;
+    const totalMinutesInDay = 24 * 60;
+    while (totalMinutes < 0) {
+      dayOffset--;
+      totalMinutes += totalMinutesInDay;
+    }
+    while (totalMinutes >= totalMinutesInDay) {
+      dayOffset++;
+      totalMinutes -= totalMinutesInDay;
+    }
+    
+    // 8. 计算调整后的小时和分钟
+    const adjustedHours = Math.floor(totalMinutes / 60);
+    const adjustedMinutes = totalMinutes % 60;
+    
+    // 9. 计算调整后的日期
+    const adjustedDateObj = new Date(localYear, localMonth, localDate);
+    adjustedDateObj.setDate(adjustedDateObj.getDate() + dayOffset);
+    
+    // 10. 计算调整后的星期（0-6）
+    let adjustedDay = localDay + dayOffset;
+    while (adjustedDay < 0) adjustedDay += 7;
+    while (adjustedDay > 6) adjustedDay -= 7;
+    
     return {
-      hours: padTwo(targetDate.getUTCHours()),
-      minutes: padTwo(targetDate.getUTCMinutes()),
-      seconds: hideSeconds ? '00' : padTwo(targetDate.getUTCSeconds()),
-      year: targetDate.getUTCFullYear(),
-      month: targetDate.getUTCMonth() + 1,
-      day: targetDate.getUTCDate(),
-      weekday: targetDate.getUTCDay(),
+      hours: padTwo(adjustedHours),
+      minutes: padTwo(adjustedMinutes),
+      seconds: hideSeconds ? '00' : padTwo(localSeconds),
+      year: adjustedDateObj.getFullYear(),
+      month: adjustedDateObj.getMonth() + 1,
+      day: adjustedDateObj.getDate(),
+      weekday: adjustedDay,
     };
   };
 
@@ -183,34 +229,11 @@ export default function ClockDisplay() {
 
   return (
     <div
-      className="flex flex-col items-center justify-center select-none relative clock-load-animation"
+      className="flex flex-col items-center justify-center select-none relative"
       style={{
         '--clock-bg': bgColor,
       } as React.CSSProperties}
     >
-      {/* 加载动画的 CSS */}
-      <style>{`
-        @keyframes clockFadeIn {
-          0% {
-            filter: blur(20px);
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          100% {
-            filter: blur(0px);
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-        .clock-load-animation {
-          animation: clockFadeIn 0.8s ease-out forwards;
-        }
-        @keyframes fadeInOut {
-          0% { opacity: 0.2; }
-          50% { opacity: 0.8; }
-          100% { opacity: 0.2; }
-        }
-      `}</style>
       {/* 右下角同步提示 - 全屏时不显示 */}
       {showSyncHint && !isFullscreen && (
         <div
