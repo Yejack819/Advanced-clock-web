@@ -82,49 +82,28 @@ export default function ClockDisplay() {
 
   const getTimeNow = () => {
     const now = new Date(Date.now() + calibrationOffset);
-    // 使用 UTC 方法直接获取 UTC 时间，然后加上偏移
-    const utcHours = now.getUTCHours();
-    const utcMinutes = now.getUTCMinutes();
-    const utcSeconds = now.getUTCSeconds();
-    const utcYear = now.getUTCFullYear();
-    const utcMonth = now.getUTCMonth();
-    const utcDate = now.getUTCDate();
-    const utcDay = now.getUTCDay();
     
-    // 计算偏移后的总分钟数
-    let totalMinutes = (utcHours + utcOffset) * 60 + utcMinutes;
+    // 获取本地时区偏移（分钟）， getTimezoneOffset 返回 UTC - 本地时间（分钟）
+    const localOffsetMinutes = -now.getTimezoneOffset();
     
-    // 计算天数偏移（可能为正或负）
-    let dayOffset = 0;
-    if (totalMinutes < 0) {
-      dayOffset = -1;
-      totalMinutes += 24 * 60;
-    } else if (totalMinutes >= 24 * 60) {
-      dayOffset = 1;
-      totalMinutes -= 24 * 60;
-    }
+    // 计算从本地时区到目标时区需要的总偏移（毫秒）
+    // 目标偏移 = UTC偏移（小时），本地偏移 = localOffsetMinutes（分钟）
+    // 需要调整的量 = (目标UTC偏移 - 本地UTC偏移) * 小时毫秒数
+    const targetOffsetMs = utcOffset * 60 * 60 * 1000; // 目标时区偏移（毫秒）
+    const localOffsetMs = localOffsetMinutes * 60 * 1000; // 本地时区偏移（毫秒）
+    const adjustMs = targetOffsetMs - localOffsetMs; // 需要调整的毫秒数
     
-    // 计算偏移后的小时和分钟
-    const adjustedHours = Math.floor(totalMinutes / 60);
-    const adjustedMinutes = totalMinutes % 60;
-    
-    // 计算偏移后的日期
-    const adjustedDate = new Date(Date.UTC(utcYear, utcMonth, utcDate));
-    adjustedDate.setUTCDate(adjustedDate.getUTCDate() + dayOffset);
-    
-    // 计算偏移后的星期
-    let adjustedDay = utcDay + dayOffset;
-    if (adjustedDay < 0) adjustedDay = 6;
-    if (adjustedDay > 6) adjustedDay = 0;
+    // 调整时间
+    const adjustedTime = new Date(now.getTime() + adjustMs);
     
     return {
-      hours: padTwo(adjustedHours),
-      minutes: padTwo(adjustedMinutes),
-      seconds: hideSeconds ? '00' : padTwo(utcSeconds),
-      year: adjustedDate.getUTCFullYear(),
-      month: adjustedDate.getUTCMonth() + 1,
-      day: adjustedDate.getUTCDate(),
-      weekday: adjustedDay,
+      hours: padTwo(adjustedTime.getHours()),
+      minutes: padTwo(adjustedTime.getMinutes()),
+      seconds: hideSeconds ? '00' : padTwo(adjustedTime.getSeconds()),
+      year: adjustedTime.getFullYear(),
+      month: adjustedTime.getMonth() + 1,
+      day: adjustedTime.getDate(),
+      weekday: adjustedTime.getDay(),
     };
   };
 
