@@ -225,7 +225,7 @@ export default function ClockDisplay() {
         <div
           style={{
             position: 'relative',
-            marginBottom: isCompactMode ? `${fontSize * 0.03}px` : `${fontSize * 0.08}px`,
+            marginBottom: isCompactMode ? `${fontSize * 0.05}px` : `${fontSize * 0.08}px`,
             cursor: dateCountdownTargets.length > 1 ? 'grab' : 'default',
             userSelect: 'none',
           }}
@@ -331,7 +331,7 @@ export default function ClockDisplay() {
         <div
           className="flex gap-1 items-center justify-center"
           style={{
-            marginBottom: isCompactMode ? `${fontSize * 0.02}px` : `${fontSize * 0.05}px`,
+            marginBottom: isCompactMode ? `${fontSize * 0.03}px` : `${fontSize * 0.05}px`,
           }}
         >
           {dateCountdownTargets.map((_, idx) => (
@@ -359,7 +359,7 @@ export default function ClockDisplay() {
             fontSize: `${dateFontSize}px`,
             color: fontColor,
             height: `${dateFontSize}px`,
-            marginBottom: isCompactMode ? `${fontSize * 0.06}px` : `${fontSize * 0.12}px`,
+            marginBottom: isCompactMode ? `${fontSize * 0.08}px` : `${fontSize * 0.12}px`,
             letterSpacing: '0.1em',
             opacity: 0.75,
             fontWeight: 300,
