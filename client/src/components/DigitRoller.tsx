@@ -118,8 +118,8 @@ export default function DigitRoller({ digit, fontSize, fontFamily, color, animat
           top: 0,
           left: 0,
           right: 0,
-          height: '25%',
-          background: `linear-gradient(to bottom, var(--clock-bg, #0a0a0a) 0%, var(--clock-bg, #0a0a0a) 10%, transparent 100%)`,
+          height: '30%',
+          background: `linear-gradient(to bottom, var(--clock-bg, #0a0a0a) 0%, var(--clock-bg, #0a0a0a) 25%, transparent 100%)`,
           zIndex: 3,
           pointerEvents: 'none',
         }}
