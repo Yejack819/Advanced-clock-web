@@ -45,6 +45,9 @@ export interface ClockSettings {
   dateCountdownInterval: number; // 轮播切换间隔（秒），区间 3-30
   language: 'zh' | 'en'; // 语言设置：中文或英文
   countdownSound: SoundType; // 倒计时结束声音类型
+  notificationEnabled: boolean; // 是否启用桌面通知
+  alarmNotification: boolean; // 闹钟是否发送桌面通知
+  countdownNotification: boolean; // 倒计时结束是否发送桌面通知
 }
 
 const DEFAULT_SETTINGS: ClockSettings = {
@@ -71,6 +74,9 @@ const DEFAULT_SETTINGS: ClockSettings = {
   ],
   language: 'zh',
   countdownSound: 'beep',
+  notificationEnabled: false,
+  alarmNotification: true,
+  countdownNotification: true,
 };
 
 const STORAGE_KEY = 'advanced-clock-settings';

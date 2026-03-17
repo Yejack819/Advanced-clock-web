@@ -11,9 +11,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useClock } from '@/contexts/ClockContext';
 import { t } from '@/lib/i18n';
-import { X, Bell, Timer, Play, Pause, RotateCcw, Volume2, Clock, Trash2 } from 'lucide-react';
+import { X, Bell, Timer, Play, Pause, RotateCcw, Volume2, Clock, Trash2, BellRing, BellOff } from 'lucide-react';
 import { SOUND_OPTIONS, playSound } from '@/lib/soundManager';
 import { getCountdownHistory, addCountdownHistory, removeCountdownHistory, formatCountdownDuration, getMostFrequentCountdown } from '@/lib/countdownHistory';
+import {
+  isNotificationSupported,
+  getNotificationPermission,
+  requestNotificationPermission,
+  sendCountdownNotification,
+  sendAlarmNotification,
+  getPermissionStatusText,
+} from '@/lib/notificationManager';
 
 export default function AlarmCountdownPanel() {
   const { settings, updateSettings, setShowAlarmCountdown, countdownRemaining, countdownRunning, startCountdown, pauseCountdown, resetCountdown } = useClock();
@@ -25,6 +33,8 @@ export default function AlarmCountdownPanel() {
   const prevCountdownRunningRef = useRef(countdownRunning);
   const hasAlertedRef = useRef(false);
   const [visible, setVisible] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(getNotificationPermission());
+  const alarmTriggeredRef = useRef<string | null>(null); // 记录已触发的闹钟时间，防止重复触发
 
   // Mount animation
   useEffect(() => {
@@ -35,6 +45,15 @@ export default function AlarmCountdownPanel() {
   const handleClose = () => {
     setVisible(false);
     setTimeout(() => setShowAlarmCountdown(false), 280);
+  };
+
+  // 请求通知权限
+  const handleRequestNotificationPermission = async () => {
+    const permission = await requestNotificationPermission();
+    setNotificationPermission(permission);
+    if (permission === 'granted') {
+      updateSettings({ notificationEnabled: true });
+    }
   };
 
   // Update history and auto-set most frequent countdown when panel opens
@@ -69,21 +88,40 @@ export default function AlarmCountdownPanel() {
     const checkAlarm = () => {
       const now = new Date();
       const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-      if (currentTime === settings.alarmTime) {
-        // Trigger alarm
+      if (currentTime === settings.alarmTime && alarmTriggeredRef.current !== settings.alarmTime) {
+        // 标记此时间已触发，防止重复
+        alarmTriggeredRef.current = settings.alarmTime;
+        
+        // 发送桌面通知
+        if (settings.notificationEnabled && settings.alarmNotification) {
+          sendAlarmNotification(settings.alarmTime, settings.language);
+        }
+        
+        // 播放声音并弹窗
         playAlarmSound();
         alert(`${t(settings.language, 'alarmTab')}: ${settings.alarmTime}`);
+      }
+      
+      // 如果时间已过，重置触发标记
+      if (currentTime !== settings.alarmTime) {
+        alarmTriggeredRef.current = null;
       }
     };
 
     const interval = setInterval(checkAlarm, 1000);
     return () => clearInterval(interval);
-  }, [settings.alarmEnabled, settings.alarmTime, settings.language]);
+  }, [settings.alarmEnabled, settings.alarmTime, settings.language, settings.notificationEnabled, settings.alarmNotification]);
 
   // Countdown timer alert when finished
   useEffect(() => {
     // Only alert when countdown finishes (reaches 0 from running state)
     if (countdownRemaining === 0 && prevCountdownRunningRef.current && !countdownRunning && !hasAlertedRef.current) {
+      // 发送桌面通知
+      if (settings.notificationEnabled && settings.countdownNotification) {
+        sendCountdownNotification(settings.language);
+      }
+      
+      // 播放声音
       playCountdownFinishSound();
       hasAlertedRef.current = true;
     }
@@ -94,7 +132,7 @@ export default function AlarmCountdownPanel() {
     }
     
     prevCountdownRunningRef.current = countdownRunning;
-  }, [countdownRemaining, countdownRunning, settings.language, settings.countdownSound]);
+  }, [countdownRemaining, countdownRunning, settings.language, settings.countdownSound, settings.notificationEnabled, settings.countdownNotification]);
 
   const playAlarmSound = () => {
     // Simple beep using Web Audio API
@@ -530,6 +568,118 @@ export default function AlarmCountdownPanel() {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Notification Settings - 底部通知设置区域 */}
+          {isNotificationSupported() && (
+            <div className="mt-4 pt-4 space-y-3" style={{ borderTop: `1px solid ${styles.panel.borderBottom}` }}>
+              <div className="flex items-center gap-2 mb-3">
+                <BellRing size={16} style={{ color: styles.panel.labelColor }} />
+                <span className="text-sm font-medium" style={{ color: styles.panel.textColor }}>
+                  {settings.language === 'zh' ? '桌面通知' : 'Desktop Notifications'}
+                </span>
+              </div>
+
+              {/* Permission Status / Request Button */}
+              {notificationPermission !== 'granted' ? (
+                <button
+                  onClick={handleRequestNotificationPermission}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-md transition-all active:scale-95"
+                  style={{
+                    background: notificationPermission === 'denied' 
+                      ? 'rgba(239,68,68,0.15)' 
+                      : 'rgba(59,130,246,0.15)',
+                    border: notificationPermission === 'denied'
+                      ? '1px solid rgba(239,68,68,0.3)'
+                      : '1px solid rgba(59,130,246,0.3)',
+                    color: notificationPermission === 'denied' ? '#ef4444' : '#60a5fa',
+                  }}
+                  disabled={notificationPermission === 'denied'}
+                >
+                  {notificationPermission === 'denied' ? (
+                    <>
+                      <BellOff size={16} />
+                      {settings.language === 'zh' ? '通知已被浏览器拒绝' : 'Notifications blocked by browser'}
+                    </>
+                  ) : (
+                    <>
+                      <BellRing size={16} />
+                      {settings.language === 'zh' ? '启用桌面通知' : 'Enable Notifications'}
+                    </>
+                  )}
+                </button>
+              ) : (
+                <>
+                  {/* Notification enabled toggle */}
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm" style={{ color: styles.panel.labelColor }}>
+                      {settings.language === 'zh' ? '启用通知' : 'Enable notifications'}
+                    </span>
+                    <button
+                      onClick={() => updateSettings({ notificationEnabled: !settings.notificationEnabled })}
+                      className="relative w-12 h-6 rounded-full transition-colors"
+                      style={{
+                        background: settings.notificationEnabled ? '#3b82f6' : (isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)'),
+                      }}
+                    >
+                      <div
+                        className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform"
+                        style={{
+                          transform: settings.notificationEnabled ? 'translateX(26px)' : 'translateX(2px)',
+                        }}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Individual notification toggles */}
+                  {settings.notificationEnabled && (
+                    <div className="space-y-2 pl-2">
+                      {/* Alarm notification toggle */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm" style={{ color: styles.panel.labelColor }}>
+                          {settings.language === 'zh' ? '闹钟通知' : 'Alarm notification'}
+                        </span>
+                        <button
+                          onClick={() => updateSettings({ alarmNotification: !settings.alarmNotification })}
+                          className="relative w-10 h-5 rounded-full transition-colors"
+                          style={{
+                            background: settings.alarmNotification ? '#10b981' : (isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)'),
+                          }}
+                        >
+                          <div
+                            className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform"
+                            style={{
+                              transform: settings.alarmNotification ? 'translateX(22px)' : 'translateX(2px)',
+                            }}
+                          />
+                        </button>
+                      </div>
+
+                      {/* Countdown notification toggle */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm" style={{ color: styles.panel.labelColor }}>
+                          {settings.language === 'zh' ? '倒计时通知' : 'Countdown notification'}
+                        </span>
+                        <button
+                          onClick={() => updateSettings({ countdownNotification: !settings.countdownNotification })}
+                          className="relative w-10 h-5 rounded-full transition-colors"
+                          style={{
+                            background: settings.countdownNotification ? '#10b981' : (isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)'),
+                          }}
+                        >
+                          <div
+                            className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform"
+                            style={{
+                              transform: settings.countdownNotification ? 'translateX(22px)' : 'translateX(2px)',
+                            }}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           )}
         </div>
