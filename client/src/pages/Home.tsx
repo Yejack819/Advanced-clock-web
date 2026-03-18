@@ -23,6 +23,42 @@ function ClockPage() {
   const { settings, isFullscreen, showCalibration, showAlarmCountdown, showDateCountdownPanel, setShowDateCountdownPanel, countdownFinished, toggleFullscreen, setShowCalibration, updateSettings } = useClock();
   const prevCountdownFinishedRef = useRef(false);
 
+  // 颜色自适应逻辑
+  useEffect(() => {
+    if (!settings.autoColorMode) return;
+
+    const updateColorsByTime = () => {
+      const now = new Date();
+      const hour = now.getHours();
+      
+      // 白天 6:00-18:00：白底黑字
+      // 晚上 18:00-6:00：黑底白字
+      const isDaytime = hour >= 6 && hour < 18;
+      
+      if (isDaytime) {
+        // 白天模式
+        updateSettings({
+          bgColor: '#ffffff',
+          fontColor: '#1a1a1a',
+        });
+      } else {
+        // 夜间模式
+        updateSettings({
+          bgColor: '#0a0a0a',
+          fontColor: '#e0e0e0',
+        });
+      }
+    };
+
+    // 立即执行一次
+    updateColorsByTime();
+
+    // 每分钟检查一次
+    const interval = setInterval(updateColorsByTime, 60000);
+
+    return () => clearInterval(interval);
+  }, [settings.autoColorMode, updateSettings]);
+
   // Keyboard shortcuts
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

@@ -48,6 +48,7 @@ export interface ClockSettings {
   notificationEnabled: boolean; // 是否启用桌面通知
   alarmNotification: boolean; // 闹钟是否发送桌面通知
   countdownNotification: boolean; // 倒计时结束是否发送桌面通知
+  autoColorMode: boolean; // 是否启用颜色自适应（白天白底黑字，晚上黑底白字）
 }
 
 const DEFAULT_SETTINGS: ClockSettings = {
@@ -77,6 +78,7 @@ const DEFAULT_SETTINGS: ClockSettings = {
   notificationEnabled: false,
   alarmNotification: true,
   countdownNotification: true,
+  autoColorMode: false,
 };
 
 const STORAGE_KEY = 'advanced-clock-settings';

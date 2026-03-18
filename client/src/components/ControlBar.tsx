@@ -28,6 +28,8 @@ import {
   Palette as PaletteIcon,
   Bell,
   Globe,
+  Sun,
+  Moon,
 } from 'lucide-react';
 
 export default function ControlBar() {
@@ -364,25 +366,38 @@ export default function ControlBar() {
 
             {/* Background Color */}
             <ControlGroup icon={<Palette size={14} />} label={t(settings.language, 'bgColor')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
-              <div className="flex items-center gap-2">
-                <div className="relative">
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <input
+                      type="color"
+                      value={settings.bgColor}
+                      onChange={e => updateSettings({ bgColor: e.target.value })}
+                      className="w-8 h-8 rounded-md border border-white/10 cursor-pointer bg-transparent p-0"
+                      disabled={settings.autoColorMode}
+                      style={{ opacity: settings.autoColorMode ? 0.5 : 1 }}
+                    />
+                  </div>
                   <input
-                    type="color"
+                    type="text"
                     value={settings.bgColor}
                     onChange={e => updateSettings({ bgColor: e.target.value })}
-                    className="w-8 h-8 rounded-md border border-white/10 cursor-pointer bg-transparent p-0"
+                    className="flex-1 border rounded-md px-3 py-1.5 text-sm font-mono outline-none focus:border-blue-500/40 transition-colors"
+                    style={{
+                      background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                      border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                      color: panelStyle.textColor,
+                      opacity: settings.autoColorMode ? 0.5 : 1,
+                    }}
+                    disabled={settings.autoColorMode}
                   />
                 </div>
-                <input
-                  type="text"
-                  value={settings.bgColor}
-                  onChange={e => updateSettings({ bgColor: e.target.value })}
-                  className="flex-1 border rounded-md px-3 py-1.5 text-sm font-mono outline-none focus:border-blue-500/40 transition-colors"
-                  style={{
-                    background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
-                    border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
-                    color: panelStyle.textColor,
-                  }}
+                <ToggleOption
+                  icon={settings.autoColorMode ? (isLightBackground ? <Moon size={13} /> : <Sun size={13} />) : <Clock size={13} />}
+                  label={settings.language === 'zh' ? '颜色自适应' : 'Auto Color'}
+                  checked={settings.autoColorMode}
+                  onChange={v => updateSettings({ autoColorMode: v })}
+                  isLightBackground={isLightBackground}
                 />
               </div>
             </ControlGroup>
