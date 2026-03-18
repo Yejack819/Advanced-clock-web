@@ -348,6 +348,8 @@ export default function ControlBar() {
                     value={settings.fontColor}
                     onChange={e => updateSettings({ fontColor: e.target.value })}
                     className="w-8 h-8 rounded-md border border-white/10 cursor-pointer bg-transparent p-0"
+                    disabled={settings.autoColorMode}
+                    style={{ opacity: settings.autoColorMode ? 0.5 : 1 }}
                   />
                 </div>
                 <input
@@ -359,7 +361,9 @@ export default function ControlBar() {
                     background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
                     border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
                     color: panelStyle.textColor,
+                    opacity: settings.autoColorMode ? 0.5 : 1,
                   }}
+                  disabled={settings.autoColorMode}
                 />
               </div>
             </ControlGroup>

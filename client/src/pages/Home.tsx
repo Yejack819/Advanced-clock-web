@@ -29,11 +29,13 @@ function ClockPage() {
 
     const updateColorsByTime = () => {
       const now = new Date();
-      const hour = now.getHours();
+      // 使用 UTC 时间加上用户设置的偏移量计算当前小时
+      const utcHour = now.getUTCHours();
+      const currentHour = (utcHour + settings.utcOffset + 24) % 24;
       
       // 白天 6:00-18:00：白底黑字
       // 晚上 18:00-6:00：黑底白字
-      const isDaytime = hour >= 6 && hour < 18;
+      const isDaytime = currentHour >= 6 && currentHour < 18;
       
       if (isDaytime) {
         // 白天模式
@@ -57,7 +59,7 @@ function ClockPage() {
     const interval = setInterval(updateColorsByTime, 60000);
 
     return () => clearInterval(interval);
-  }, [settings.autoColorMode, updateSettings]);
+  }, [settings.autoColorMode, settings.utcOffset, updateSettings]);
 
   // Keyboard shortcuts
   React.useEffect(() => {
