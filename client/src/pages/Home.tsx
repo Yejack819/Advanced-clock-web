@@ -117,7 +117,7 @@ function ClockPage() {
       className={`min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden ${isFullscreen ? 'fullscreen-mode' : ''}`}
       style={{
         backgroundColor: settings.bgColor,
-        transition: 'background-color 0.3s ease',
+        transition: settings.autoColorMode ? 'background-color 3s ease-in-out' : 'background-color 0.3s ease',
       }}
       onDoubleClick={handleDoubleClick}
     >
@@ -127,6 +127,7 @@ function ClockPage() {
         style={{
           background: `radial-gradient(ellipse at center, transparent 50%, ${settings.bgColor} 100%)`,
           opacity: 0.5,
+          transition: settings.autoColorMode ? 'background 3s ease-in-out' : 'background 0.3s ease',
         }}
       />
 

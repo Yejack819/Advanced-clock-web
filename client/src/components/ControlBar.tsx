@@ -397,7 +397,7 @@ export default function ControlBar() {
                   />
                 </div>
                 <ToggleOption
-                  icon={settings.autoColorMode ? (isLightBackground ? <Moon size={13} /> : <Sun size={13} />) : <Clock size={13} />}
+                  icon={settings.autoColorMode ? (isLightBackground ? <Sun size={13} /> : <Moon size={13} />) : <Clock size={13} />}
                   label={settings.language === 'zh' ? '颜色自适应' : 'Auto Color'}
                   checked={settings.autoColorMode}
                   onChange={v => updateSettings({ autoColorMode: v })}
