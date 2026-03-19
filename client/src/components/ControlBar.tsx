@@ -9,8 +9,8 @@
  * - 按钮点击动画反馈
  * - 完整的国际化支持
  */
-import React, { useState } from 'react';
-import { useClock, FONT_OPTIONS } from '@/contexts/ClockContext';
+import React, { useState, useRef } from 'react';
+import { useClock, FONT_OPTIONS, ClockSettings } from '@/contexts/ClockContext';
 import { t, getThemeName } from '@/lib/i18n';
 import {
   Maximize,
@@ -319,52 +319,52 @@ export default function ControlBar() {
               </div>
             </ControlGroup>
 
-            {/* Font Family */}
-            <ControlGroup icon={<Type size={14} />} label={t(settings.language, 'fontFamily')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
-              <select
-                value={settings.fontFamily}
-                onChange={e => updateSettings({ fontFamily: e.target.value })}
-                className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:border-blue-500/40 transition-colors appearance-none active:scale-95"
-                style={{
-                  background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
-                  border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
-                  color: panelStyle.textColor,
-                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${isLightBackground ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
-              >
-                {FONT_OPTIONS.map(f => (
-                  <option key={f.value} value={f.value} style={{ background: '#141414', color: '#ccc' }}>
-                    {settings.language === 'zh' ? f.labelZh : f.label}
-                  </option>
-                ))}
-              </select>
-            </ControlGroup>
-
-            {/* Font Color */}
-            <ControlGroup icon={<Palette size={14} />} label={t(settings.language, 'fontColor')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
-              <div className="flex items-center gap-2">
-                <div className="relative">
-                  <input
-                    type="color"
-                    value={settings.fontColor}
-                    onChange={e => updateSettings({ fontColor: e.target.value })}
-                    className="w-8 h-8 rounded-md border border-white/10 cursor-pointer bg-transparent p-0"
-                    disabled={settings.autoColorMode}
-                    style={{ opacity: settings.autoColorMode ? 0.5 : 1 }}
-                  />
-                </div>
-                <input
-                  type="text"
-                  value={settings.fontColor}
-                  onChange={e => updateSettings({ fontColor: e.target.value })}
-                  className="flex-1 border rounded-md px-3 py-1.5 text-sm font-mono outline-none focus:border-blue-500/40 transition-colors"
+            {/* Font Settings (字体设置) - 合并字体和字体颜色 */}
+            <ControlGroup icon={<Type size={14} />} label={settings.language === 'zh' ? '字体设置' : 'Font Settings'} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+              <div className="flex flex-col gap-2">
+                {/* Font Family Select */}
+                <select
+                  value={settings.fontFamily}
+                  onChange={e => updateSettings({ fontFamily: e.target.value })}
+                  className="w-full border rounded-md px-3 py-2 text-sm outline-none focus:border-blue-500/40 transition-colors appearance-none active:scale-95"
                   style={{
                     background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
                     border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
                     color: panelStyle.textColor,
-                    opacity: settings.autoColorMode ? 0.5 : 1,
-                  }}
-                  disabled={settings.autoColorMode}
-                />
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${isLightBackground ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 10px center' }}
+                >
+                  {FONT_OPTIONS.map(f => (
+                    <option key={f.value} value={f.value} style={{ background: '#141414', color: '#ccc' }}>
+                      {settings.language === 'zh' ? f.labelZh : f.label}
+                    </option>
+                  ))}
+                </select>
+                {/* Font Color */}
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <input
+                      type="color"
+                      value={settings.fontColor}
+                      onChange={e => updateSettings({ fontColor: e.target.value })}
+                      className="w-8 h-8 rounded-md border border-white/10 cursor-pointer bg-transparent p-0"
+                      disabled={settings.autoColorMode}
+                      style={{ opacity: settings.autoColorMode ? 0.5 : 1 }}
+                    />
+                  </div>
+                  <input
+                    type="text"
+                    value={settings.fontColor}
+                    onChange={e => updateSettings({ fontColor: e.target.value })}
+                    className="flex-1 border rounded-md px-3 py-1.5 text-sm font-mono outline-none focus:border-blue-500/40 transition-colors"
+                    style={{
+                      background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.05)',
+                      border: isLightBackground ? '1px solid rgba(0,0,0,0.15)' : '1px solid rgba(255,255,255,0.08)',
+                      color: panelStyle.textColor,
+                      opacity: settings.autoColorMode ? 0.5 : 1,
+                    }}
+                    disabled={settings.autoColorMode}
+                  />
+                </div>
               </div>
             </ControlGroup>
 
@@ -458,11 +458,13 @@ export default function ControlBar() {
             {/* Actions */}
             <ControlGroup icon={<Maximize size={14} />} label={t(settings.language, 'actions')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
               <div className="flex flex-col gap-2">
-                <ActionButton
-                  icon={isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
-                  label={isFullscreen ? t(settings.language, 'exitFullscreen') : t(settings.language, 'fullscreen')}
-                  onClick={toggleFullscreen}
+                <FullscreenButton
+                  settings={settings}
+                  updateSettings={updateSettings}
+                  toggleFullscreen={toggleFullscreen}
+                  isFullscreen={isFullscreen}
                   isLightBackground={isLightBackground}
+                  language={settings.language}
                 />
                 <ActionButton
                   icon={<Crosshair size={14} />}
@@ -584,6 +586,77 @@ function ActionButton({ icon, label, onClick, active, isLightBackground }: { ico
       }}
     >
       <span>{icon}</span>
+      <span className="text-sm">{label}</span>
+    </button>
+  );
+}
+
+// 全屏按钮 - 单击切换双击全屏开关，长按进入全屏
+function FullscreenButton({ settings, updateSettings, toggleFullscreen, isFullscreen, isLightBackground, language }: { 
+  settings: ClockSettings; 
+  updateSettings: (partial: Partial<ClockSettings>) => void; 
+  toggleFullscreen: () => void; 
+  isFullscreen: boolean;
+  isLightBackground: boolean;
+  language: 'zh' | 'en';
+}) {
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [isPressing, setIsPressing] = useState(false);
+
+  const handleMouseDown = () => {
+    setIsPressing(true);
+    longPressTimerRef.current = setTimeout(() => {
+      // 长按：进入全屏
+      toggleFullscreen();
+      setIsPressing(false);
+    }, 500); // 500ms 长按
+  };
+
+  const handleMouseUp = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    if (isPressing) {
+      // 短按：切换双击全屏开关
+      updateSettings({ doubleClickFullscreen: !settings.doubleClickFullscreen });
+    }
+    setIsPressing(false);
+  };
+
+  const handleMouseLeave = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+    setIsPressing(false);
+  };
+
+  const label = settings.doubleClickFullscreen 
+    ? (language === 'zh' ? '双击全屏 ✓' : 'Double-click ✓')
+    : (language === 'zh' ? '双击全屏 ✗' : 'Double-click ✗');
+
+  return (
+    <button
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleMouseDown}
+      onTouchEnd={handleMouseUp}
+      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-200 active:scale-95"
+      style={{
+        background: settings.doubleClickFullscreen 
+          ? 'rgba(59, 130, 246, 0.15)' 
+          : (isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
+        border: settings.doubleClickFullscreen 
+          ? '1px solid rgba(59, 130, 246, 0.3)' 
+          : (isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
+        color: settings.doubleClickFullscreen 
+          ? 'rgba(59, 130, 246, 0.8)' 
+          : (isLightBackground ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
+      }}
+    >
+      <span>{isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}</span>
       <span className="text-sm">{label}</span>
     </button>
   );

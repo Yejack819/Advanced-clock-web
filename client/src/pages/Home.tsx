@@ -104,8 +104,11 @@ function ClockPage() {
     prevCountdownFinishedRef.current = countdownFinished;
   }, [countdownFinished, settings.countdownSound]);
 
-  // Double-click to toggle fullscreen
+  // Double-click to toggle fullscreen (only if enabled in settings)
   const handleDoubleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Check if double-click fullscreen is enabled
+    if (!settings.doubleClickFullscreen) return;
+    
     // Only toggle if clicking on empty space (not on interactive elements)
     if ((e.target as HTMLElement).tagName === 'DIV' || (e.target as HTMLElement).tagName === 'SPAN') {
       toggleFullscreen();
