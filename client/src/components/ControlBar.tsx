@@ -639,8 +639,8 @@ function FullscreenButton({ settings, updateSettings, toggleFullscreen, isFullsc
   };
 
   const label = settings.doubleClickFullscreen 
-    ? (language === 'zh' ? '双击全屏 ✓' : 'Double-click ✓')
-    : (language === 'zh' ? '双击全屏 ✗' : 'Double-click ✗');
+    ? (language === 'zh' ? '已开启双击全屏' : 'Double-click enabled')
+    : (language === 'zh' ? '已禁用双击全屏' : 'Double-click disabled');
 
   return (
     <button
