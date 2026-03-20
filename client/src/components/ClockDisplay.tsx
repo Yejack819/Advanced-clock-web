@@ -67,14 +67,49 @@ export default function ClockDisplay() {
     ? dateCountdownTargets[displayedIndex]
     : null;
 
-  // Calculate days until target date
+  // Calculate days until target date using UTC-adjusted time
   const calculateDaysUntil = () => {
     if (!currentTarget) return 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    
+    // Get current time with calibration offset
+    const localNow = new Date(Date.now() + calibrationOffset);
+    
+    // Calculate local timezone offset
+    const localOffsetMinutes = localNow.getTimezoneOffset();
+    const localOffsetHours = -localOffsetMinutes / 60;
+    
+    // Calculate the adjustment needed from local to target UTC
+    const adjustHours = utcOffset - localOffsetHours;
+    
+    // Get current date components
+    const localYear = localNow.getFullYear();
+    const localMonth = localNow.getMonth();
+    const localDate = localNow.getDate();
+    const localHours = localNow.getHours();
+    
+    // Calculate adjusted date
+    let adjustedDateObj = new Date(localYear, localMonth, localDate);
+    let totalHours = localHours + adjustHours;
+    
+    // Handle day overflow
+    while (totalHours >= 24) {
+      adjustedDateObj.setDate(adjustedDateObj.getDate() + 1);
+      totalHours -= 24;
+    }
+    while (totalHours < 0) {
+      adjustedDateObj.setDate(adjustedDateObj.getDate() - 1);
+      totalHours += 24;
+    }
+    
+    // Set to start of day for comparison
+    adjustedDateObj.setHours(0, 0, 0, 0);
+    
+    // Target date at start of day
     const target = new Date(currentTarget.date);
     target.setHours(0, 0, 0, 0);
-    const diff = target.getTime() - today.getTime();
+    
+    // Calculate difference in days
+    const diff = target.getTime() - adjustedDateObj.getTime();
     return Math.ceil(diff / (1000 * 60 * 60 * 24));
   };
 

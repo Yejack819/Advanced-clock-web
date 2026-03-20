@@ -183,8 +183,8 @@ export const dateFormats = {
 
 // 倒计时文本格式
 export const countdownFormats = {
-  zh: (days: number, label: string) => `距离${label}还有${days}天`,
-  en: (days: number, label: string) => `${days} days until ${label}`,
+  zh: (days: number, label: string) => days < 1 ? `距离${label}还有不到1天` : `距离${label}还有${days}天`,
+  en: (days: number, label: string) => days < 1 ? `Less than 1 day until ${label}` : `${days} days until ${label}`,
 };
 
 // 获取翻译文本

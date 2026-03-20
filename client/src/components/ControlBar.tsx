@@ -491,18 +491,21 @@ export default function ControlBar() {
                   label={getThemeName(settings.language, 'cyberpunk')}
                   onClick={() => applyTheme('cyberpunk')}
                   isLightBackground={isLightBackground}
+                  disabled={settings.autoColorMode}
                 />
                 <ActionButton
                   icon={<span>⚪</span>}
                   label={getThemeName(settings.language, 'minimal')}
                   onClick={() => applyTheme('minimal')}
                   isLightBackground={isLightBackground}
+                  disabled={settings.autoColorMode}
                 />
                 <ActionButton
                   icon={<span>💚</span>}
                   label={getThemeName(settings.language, 'retro')}
                   onClick={() => applyTheme('retro')}
                   isLightBackground={isLightBackground}
+                  disabled={settings.autoColorMode}
                 />
               </div>
             </ControlGroup>
@@ -573,16 +576,19 @@ function ToggleOption({ icon, label, checked, onChange, isLightBackground }: { i
   );
 }
 
-function ActionButton({ icon, label, onClick, active, isLightBackground }: { icon: React.ReactNode; label: string; onClick: () => void; active?: boolean; isLightBackground?: boolean }) {
+function ActionButton({ icon, label, onClick, active, isLightBackground, disabled }: { icon: React.ReactNode; label: string; onClick: () => void; active?: boolean; isLightBackground?: boolean; disabled?: boolean }) {
   
   return (
     <button
       onClick={onClick}
       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm transition-all duration-200 active:scale-95"
+      disabled={disabled}
       style={{
         background: active ? 'rgba(59, 130, 246, 0.15)' : (isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
         border: active ? '1px solid rgba(59, 130, 246, 0.3)' : (isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
         color: active ? 'rgba(59, 130, 246, 0.8)' : (isLightBackground ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
+        opacity: disabled ? 0.5 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
       }}
     >
       <span>{icon}</span>
