@@ -227,8 +227,8 @@ export default function ClockDisplay() {
   const digitHeight = fontSize * 1.15;
   const dateHeight = digitHeight * (lineHeight / 100);
   
-  // 当日期和日期倒计时都显示时，使用更紧凑的间距
-  const isCompactMode = showDate && showDateCountdown && currentTarget && daysUntil >= 0;
+  // 当日期和日期纪念日都显示时，使用更紧凑的间距
+  const isCompactMode = showDate && showDateCountdown && currentTarget;
 
   // Get date display text based on language and format
   const getDateDisplayText = () => {
@@ -292,8 +292,8 @@ export default function ClockDisplay() {
           <div>⟲ {language === 'zh' ? '时间已同步' : 'Time Synced'}</div>
         </div>
       )}
-      {/* Date countdown display with carousel slide animation and side fade masks */}
-      {showDateCountdown && currentTarget && daysUntil >= 0 && (
+      {/* Date anniversary/countdown display with carousel slide animation and side fade masks */}
+      {showDateCountdown && currentTarget && (
         <div
           style={{
             position: 'relative',

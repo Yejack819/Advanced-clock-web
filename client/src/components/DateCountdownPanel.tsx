@@ -1,9 +1,9 @@
 /**
- * DateCountdownPanel - 日期倒计时设置面板
+ * DateCountdownPanel - 日期纪念日设置面板
  *
  * 设计哲学：暗黑机械美学
  * - 液态玻璃效果的浮动面板
- * - 支持多个日期倒计时目标
+ * - 支持多个日期纪念日目标（包括过去和未来的日期）
  * - 完整的国际化支持
  * - 流畅的进入/退出动画
  * - 按钮点击反馈动画（ripple + scale）
@@ -283,7 +283,7 @@ export default function DateCountdownPanel({ onClose }: DateCountdownPanelProps)
             <div className="flex items-center gap-2">
               <Calendar size={18} style={{ color: '#60a5fa' }} />
               <h2 className="text-base font-medium" style={{ color: styles.panel.textColor }}>
-                {lang === 'zh' ? '日期倒计时' : 'Date Countdown'}
+                {lang === 'zh' ? '日期纪念日' : 'Date Anniversary'}
               </h2>
             </div>
             <RippleButton
@@ -303,7 +303,7 @@ export default function DateCountdownPanel({ onClose }: DateCountdownPanelProps)
             {/* Enable toggle */}
             <div className="flex items-center justify-between">
               <span className="text-sm" style={{ color: styles.panel.labelColor }}>
-                {lang === 'zh' ? '启用日期倒计时' : 'Enable Date Countdown'}
+                {lang === 'zh' ? '启用日期纪念日' : 'Enable Date Anniversary'}
               </span>
               <RippleButton
                 onClick={() => updateSettings({ showDateCountdown: !settings.showDateCountdown })}

@@ -22,9 +22,9 @@ export const translations = {
     'fontCategoryChinese': '中文字体',
     'hideSeconds': '隐藏秒',
     'showDate': '显示日期',
-    'showDateCountdown': '显示日期倒计时',
+    'showDateCountdown': '显示日期纪念日',
     'dateFontRatio': '日期字体比例',
-    'dateCountdownSettings': '日期倒计时',
+    'dateCountdownSettings': '日期纪念日',
     'countdownLabel': '标签',
     'countdownLabelPlaceholder': '例：新年',
     'countdownDate': '目标日期',
@@ -99,9 +99,9 @@ export const translations = {
     'fontCategoryChinese': 'Chinese',
     'hideSeconds': 'Hide Seconds',
     'showDate': 'Show Date',
-    'showDateCountdown': 'Show Date Countdown',
+    'showDateCountdown': 'Show Date Anniversary',
     'dateFontRatio': 'Date Font Ratio',
-    'dateCountdownSettings': 'Date Countdown',
+    'dateCountdownSettings': 'Date Anniversary',
     'countdownLabel': 'Label',
     'countdownLabelPlaceholder': 'e.g., New Year',
     'countdownDate': 'Target Date',
@@ -181,10 +181,28 @@ export const dateFormats = {
   },
 };
 
-// 倒计时文本格式
+// 倒计时/纪念日文本格式
 export const countdownFormats = {
-  zh: (days: number, label: string) => days < 1 ? `距离${label}还有不到1天` : `距离${label}还有${days}天`,
-  en: (days: number, label: string) => days < 1 ? `Less than 1 day until ${label}` : `${days} days until ${label}`,
+  zh: (days: number, label: string) => {
+    if (days < 0) {
+      // 过去的日期（纪念日）
+      const absDays = Math.abs(days);
+      return absDays < 1 ? `距离${label}已不到1天` : `距离${label}已有${absDays}天`;
+    } else {
+      // 未来的日期（倒计时）
+      return days < 1 ? `距离${label}还有不到1天` : `距离${label}还有${days}天`;
+    }
+  },
+  en: (days: number, label: string) => {
+    if (days < 0) {
+      // Past date (anniversary)
+      const absDays = Math.abs(days);
+      return absDays < 1 ? `Less than 1 day since ${label}` : `${absDays} days since ${label}`;
+    } else {
+      // Future date (countdown)
+      return days < 1 ? `Less than 1 day until ${label}` : `${days} days until ${label}`;
+    }
+  },
 };
 
 // 获取翻译文本
