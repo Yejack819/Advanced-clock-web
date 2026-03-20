@@ -139,21 +139,6 @@ export default function DigitRoller({ digit, fontSize, fontFamily, color, animat
         }}
       />
 
-      {/* Subtle highlight line at center */}
-      <div
-        style={{
-          position: 'absolute',
-          top: '50%',
-          left: 0,
-          right: 0,
-          height: '1px',
-          background: `linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent)`,
-          zIndex: 4,
-          pointerEvents: 'none',
-          transform: 'translateY(-50%)',
-        }}
-      />
-
       {/* Digit strip */}
       <div
         style={{
