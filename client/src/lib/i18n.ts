@@ -184,7 +184,10 @@ export const dateFormats = {
 // 倒计时/纪念日文本格式
 export const countdownFormats = {
   zh: (days: number, label: string) => {
-    if (days < 0) {
+    if (days === 0) {
+      // 今天
+      return `今天是${label}`;
+    } else if (days < 0) {
       // 过去的日期（纪念日）
       const absDays = Math.abs(days);
       return absDays < 1 ? `距离${label}已不到1天` : `距离${label}已有${absDays}天`;
@@ -194,7 +197,10 @@ export const countdownFormats = {
     }
   },
   en: (days: number, label: string) => {
-    if (days < 0) {
+    if (days === 0) {
+      // Today
+      return `Today is ${label}`;
+    } else if (days < 0) {
       // Past date (anniversary)
       const absDays = Math.abs(days);
       return absDays < 1 ? `Less than 1 day since ${label}` : `${absDays} days since ${label}`;
