@@ -4,6 +4,7 @@
  * 设计哲学：暗黑机械美学
  * - 液态玻璃效果的浮动面板
  * - 闹钟和倒计时分两个标签页
+ * - 支持多个闹钟
  * - 倒计时状态持久化到 Context，关闭面板后继续运行
  * - 完整的国际化支持
  * - 倒计时结束声音和屏幕闪烁设置
@@ -11,7 +12,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useClock } from '@/contexts/ClockContext';
 import { t } from '@/lib/i18n';
-import { X, Bell, Timer, Play, Pause, RotateCcw, Volume2, Clock, Trash2, BellRing, BellOff } from 'lucide-react';
+import { X, Bell, Timer, Play, Pause, RotateCcw, Volume2, Clock, Trash2, BellRing, BellOff, Plus, Check, Pencil } from 'lucide-react';
 import { SOUND_OPTIONS, playSound } from '@/lib/soundManager';
 import { getCountdownHistory, addCountdownHistory, removeCountdownHistory, formatCountdownDuration, getMostFrequentCountdown } from '@/lib/countdownHistory';
 import {
@@ -34,7 +35,12 @@ export default function AlarmCountdownPanel() {
   const hasAlertedRef = useRef(false);
   const [visible, setVisible] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(getNotificationPermission());
-  const alarmTriggeredRef = useRef<string | null>(null); // 记录已触发的闹钟时间，防止重复触发
+  const alarmTriggeredRef = useRef<Set<string>>(new Set()); // 记录已触发的闹钟ID，防止重复触发
+  
+  // 闹钟编辑状态
+  const [editingAlarmId, setEditingAlarmId] = useState<string | null>(null);
+  const [editAlarmTime, setEditAlarmTime] = useState('08:00');
+  const [editAlarmLabel, setEditAlarmLabel] = useState('');
 
   // Mount animation
   useEffect(() => {
@@ -81,36 +87,43 @@ export default function AlarmCountdownPanel() {
     return brightness > 128;
   })();
 
-  // Alarm check
+  // Alarm check - 支持多个闹钟
   useEffect(() => {
-    if (!settings.alarmEnabled) return;
+    const enabledAlarms = settings.alarms.filter(a => a.enabled);
+    if (enabledAlarms.length === 0) return;
     
     const checkAlarm = () => {
       const now = new Date();
       const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-      if (currentTime === settings.alarmTime && alarmTriggeredRef.current !== settings.alarmTime) {
-        // 标记此时间已触发，防止重复
-        alarmTriggeredRef.current = settings.alarmTime;
-        
-        // 发送桌面通知
-        if (settings.notificationEnabled && settings.alarmNotification) {
-          sendAlarmNotification(settings.alarmTime, settings.language);
-        }
-        
-        // 播放声音并弹窗
-        playAlarmSound();
-        alert(`${t(settings.language, 'alarmTab')}: ${settings.alarmTime}`);
-      }
       
-      // 如果时间已过，重置触发标记
-      if (currentTime !== settings.alarmTime) {
-        alarmTriggeredRef.current = null;
-      }
+      enabledAlarms.forEach(alarm => {
+        if (currentTime === alarm.time && !alarmTriggeredRef.current.has(alarm.id)) {
+          // 标记此闹钟已触发
+          alarmTriggeredRef.current.add(alarm.id);
+          
+          // 发送桌面通知
+          if (settings.notificationEnabled && settings.alarmNotification) {
+            sendAlarmNotification(alarm.time, settings.language, alarm.label);
+          }
+          
+          // 播放声音并弹窗
+          playAlarmSound();
+          const label = alarm.label || (settings.language === 'zh' ? '闹钟' : 'Alarm');
+          alert(`${label}: ${alarm.time}`);
+        }
+      });
+      
+      // 清除已过时间的触发标记
+      alarmTriggeredRef.current = new Set(
+        enabledAlarms
+          .filter(a => a.time === currentTime)
+          .map(a => a.id)
+      );
     };
 
     const interval = setInterval(checkAlarm, 1000);
     return () => clearInterval(interval);
-  }, [settings.alarmEnabled, settings.alarmTime, settings.language, settings.notificationEnabled, settings.alarmNotification]);
+  }, [settings.alarms, settings.language, settings.notificationEnabled, settings.alarmNotification]);
 
   // Countdown timer alert when finished
   useEffect(() => {
@@ -321,49 +334,159 @@ export default function AlarmCountdownPanel() {
         <div className="p-6">
           {activeTab === 'alarm' ? (
             <div className="space-y-4">
-              {/* Alarm enabled toggle */}
-              <div className="flex items-center justify-between">
-                <span className="text-sm" style={{ color: styles.panel.labelColor }}>
-                  {t(settings.language, 'alarmEnable')}
-                </span>
-                <button
-                  onClick={() => updateSettings({ alarmEnabled: !settings.alarmEnabled })}
-                  className="relative w-12 h-6 rounded-full transition-colors"
-                  style={{
-                    background: settings.alarmEnabled ? '#3b82f6' : (isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)'),
-                  }}
-                >
+              {/* 闹钟列表 */}
+              <div className="space-y-2 max-h-[40vh] overflow-y-auto">
+                {settings.alarms.map((alarm) => (
                   <div
-                    className="absolute top-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform"
+                    key={alarm.id}
+                    className="rounded-lg p-3 space-y-2"
                     style={{
-                      transform: settings.alarmEnabled ? 'translateX(26px)' : 'translateX(2px)',
+                      background: isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${editingAlarmId === alarm.id ? 'rgba(59,130,246,0.4)' : styles.panel.inputBorder}`,
                     }}
-                  />
-                </button>
+                  >
+                    {editingAlarmId === alarm.id ? (
+                      <>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={editAlarmLabel}
+                            onChange={e => setEditAlarmLabel(e.target.value)}
+                            className="flex-1 rounded px-2 py-1.5 text-xs outline-none transition-colors"
+                            style={{
+                              background: styles.panel.inputBg,
+                              border: `1px solid ${styles.panel.inputBorder}`,
+                              color: styles.panel.textColor,
+                            }}
+                            placeholder={settings.language === 'zh' ? '标签（可选）' : 'Label (optional)'}
+                          />
+                          <input
+                            type="time"
+                            value={editAlarmTime}
+                            onChange={e => setEditAlarmTime(e.target.value)}
+                            className="rounded px-2 py-1.5 text-xs outline-none transition-colors"
+                            style={{
+                              background: styles.panel.inputBg,
+                              border: `1px solid ${styles.panel.inputBorder}`,
+                              color: styles.panel.textColor,
+                            }}
+                          />
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => {
+                              const newAlarms = settings.alarms.map(a =>
+                                a.id === alarm.id ? { ...a, time: editAlarmTime, label: editAlarmLabel } : a
+                              );
+                              updateSettings({ alarms: newAlarms });
+                              setEditingAlarmId(null);
+                            }}
+                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs font-medium"
+                            style={{ background: '#3b82f6', color: 'white' }}
+                          >
+                            <Check size={12} />
+                            {settings.language === 'zh' ? '保存' : 'Save'}
+                          </button>
+                          <button
+                            onClick={() => setEditingAlarmId(null)}
+                            className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs font-medium"
+                            style={{ background: isLightBackground ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)', color: styles.panel.textColor }}
+                          >
+                            <X size={12} />
+                            {settings.language === 'zh' ? '取消' : 'Cancel'}
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => {
+                              const newAlarms = settings.alarms.map(a =>
+                                a.id === alarm.id ? { ...a, enabled: !a.enabled } : a
+                              );
+                              updateSettings({ alarms: newAlarms });
+                            }}
+                            className="relative w-10 h-5 rounded-full transition-colors"
+                            style={{
+                              background: alarm.enabled ? '#3b82f6' : (isLightBackground ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)'),
+                            }}
+                          >
+                            <div
+                              className="absolute top-0.5 w-4 h-4 rounded-full bg-white shadow-sm transition-transform"
+                              style={{
+                                transform: alarm.enabled ? 'translateX(22px)' : 'translateX(2px)',
+                              }}
+                            />
+                          </button>
+                          <div>
+                            <div className="text-lg font-mono font-medium" style={{ color: alarm.enabled ? styles.panel.textColor : styles.panel.labelColor }}>
+                              {alarm.time}
+                            </div>
+                            {alarm.label && (
+                              <div className="text-xs" style={{ color: styles.panel.labelColor }}>
+                                {alarm.label}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              setEditingAlarmId(alarm.id);
+                              setEditAlarmTime(alarm.time);
+                              setEditAlarmLabel(alarm.label);
+                            }}
+                            className="p-1.5 rounded transition-all hover:opacity-70"
+                            style={{ color: styles.panel.labelColor }}
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              const newAlarms = settings.alarms.filter(a => a.id !== alarm.id);
+                              updateSettings({ alarms: newAlarms });
+                            }}
+                            className="p-1.5 rounded transition-all hover:opacity-70"
+                            style={{ color: '#f87171' }}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
 
-              {/* Alarm time */}
-              <div className="space-y-2">
-                <label className="text-sm" style={{ color: styles.panel.labelColor }}>
-                  {t(settings.language, 'alarmTime')}
-                </label>
-                <input
-                  type="time"
-                  value={settings.alarmTime}
-                  onChange={e => updateSettings({ alarmTime: e.target.value })}
-                  className="w-full rounded-md px-4 py-3 text-lg font-mono outline-none focus:border-blue-500/40 transition-colors"
-                  style={{
-                    background: styles.panel.inputBg,
-                    border: `1px solid ${styles.panel.inputBorder}`,
-                    color: styles.panel.textColor,
-                  }}
-                />
-              </div>
+              {/* 添加闹钟按钮 */}
+              <button
+                onClick={() => {
+                  const newId = Date.now().toString();
+                  const newAlarms = [...settings.alarms, { id: newId, time: '08:00', enabled: true, label: '' }];
+                  updateSettings({ alarms: newAlarms });
+                  setEditingAlarmId(newId);
+                  setEditAlarmTime('08:00');
+                  setEditAlarmLabel('');
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-md transition-all active:scale-95"
+                style={{
+                  background: 'rgba(59,130,246,0.2)',
+                  border: '1px solid rgba(59,130,246,0.3)',
+                  color: '#60a5fa',
+                }}
+              >
+                <Plus size={16} />
+                {settings.language === 'zh' ? '添加闹钟' : 'Add Alarm'}
+              </button>
 
-              {settings.alarmEnabled && (
-                <div className="mt-4 p-3 rounded-md" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
+              {/* 提示信息 */}
+              {settings.alarms.filter(a => a.enabled).length > 0 && (
+                <div className="mt-2 p-3 rounded-md" style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)' }}>
                   <p className="text-sm" style={{ color: '#60a5fa' }}>
-                    {t(settings.language, 'alarmWillRing').replace('{time}', settings.alarmTime)}
+                    {settings.language === 'zh' 
+                      ? `已启用 ${settings.alarms.filter(a => a.enabled).length} 个闹钟` 
+                      : `${settings.alarms.filter(a => a.enabled).length} alarm(s) enabled`}
                   </p>
                 </div>
               )}

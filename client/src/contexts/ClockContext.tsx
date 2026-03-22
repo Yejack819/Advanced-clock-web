@@ -36,8 +36,7 @@ export interface ClockSettings {
   animationSpeed: number; // 动画速度，秒 (0.3-1.0)
   utcOffset: number; // UTC偏移量，例如 +8 表示 UTC+8，-5 表示 UTC-5
   dateFontRatio: number; // 日期字体大小分母，日期字体 = 时钟字体 / dateFontRatio，范围 2-10
-  alarmEnabled: boolean; // 闹钟是否启用
-  alarmTime: string; // 闹钟时间，格式 HH:mm
+  alarms: Array<{ id: string; time: string; enabled: boolean; label: string }>; // 多个闹钟
   countdownEnabled: boolean; // 倒计时是否启用
   countdownMinutes: number; // 倒计时分钟数
   showDateCountdown: boolean; // 是否显示日期倒计时
@@ -65,8 +64,7 @@ const DEFAULT_SETTINGS: ClockSettings = {
   animationSpeed: 0.5,
   utcOffset: 8,
   dateFontRatio: 3,
-  alarmEnabled: false,
-  alarmTime: '08:00',
+  alarms: [],
   countdownEnabled: false,
   countdownMinutes: 5,
   showDateCountdown: false,

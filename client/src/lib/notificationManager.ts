@@ -102,11 +102,11 @@ export function sendCountdownNotification(language: 'zh' | 'en' = 'zh'): Notific
 }
 
 // 发送闹钟通知
-export function sendAlarmNotification(alarmTime: string, language: 'zh' | 'en' = 'zh'): Notification | null {
+export function sendAlarmNotification(alarmTime: string, language: 'zh' | 'en' = 'zh', label?: string): Notification | null {
   const title = language === 'zh' ? '🔔 闹钟提醒' : '🔔 Alarm';
-  const body = language === 'zh' 
-    ? `闹钟时间到了：${alarmTime}` 
-    : `Alarm time: ${alarmTime}`;
+  const body = label
+    ? (language === 'zh' ? `${label}：${alarmTime}` : `${label}: ${alarmTime}`)
+    : (language === 'zh' ? `闹钟时间到了：${alarmTime}` : `Alarm time: ${alarmTime}`);
 
   return sendNotification({
     title,
