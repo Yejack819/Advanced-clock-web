@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { SoundType, playSound } from '@/lib/soundManager';
 import { sendAlarmNotification } from '@/lib/notificationManager';
+import { addAlarmHistory } from '@/lib/alarmHistory';
 
 // Available font options with Chinese names
 export const FONT_OPTIONS = [
@@ -38,6 +39,7 @@ export interface ClockSettings {
   utcOffset: number; // UTC偏移量，例如 +8 表示 UTC+8，-5 表示 UTC-5
   dateFontRatio: number; // 日期字体大小分母，日期字体 = 时钟字体 / dateFontRatio，范围 2-10
   alarms: Array<{ id: string; time: string; enabled: boolean; label: string }>; // 多个闹钟
+  alarmSound: SoundType; // 闹钟声音类型
   countdownEnabled: boolean; // 倒计时是否启用
   countdownMinutes: number; // 倒计时分钟数
   showDateCountdown: boolean; // 是否显示日期倒计时
@@ -66,6 +68,7 @@ const DEFAULT_SETTINGS: ClockSettings = {
   utcOffset: 8,
   dateFontRatio: 3,
   alarms: [],
+  alarmSound: 'beep',
   countdownEnabled: false,
   countdownMinutes: 5,
   showDateCountdown: false,
@@ -274,7 +277,7 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
       
       const now = new Date();
       
-      // 计算UTC调整后的时间
+      // 计算本地时区偏移
       const localOffsetMinutes = now.getTimezoneOffset();
       const localOffsetHours = -localOffsetMinutes / 60;
       const adjustHours = settings.utcOffset - localOffsetHours;
@@ -292,13 +295,23 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
           // 标记此闹钟已触发
           alarmTriggeredRef.current.add(alarm.id);
           
+          // 记录闹钟历史
+          addAlarmHistory(alarm.time);
+          
           // 发送桌面通知
           if (settings.notificationEnabled && settings.alarmNotification) {
             sendAlarmNotification(alarm.time, settings.language, alarm.label);
           }
           
-          // 播放声音
-          playSound('beep', 1.5);
+          // 播放声音3遍
+          const playAlarmSound = (times: number, delay: number) => {
+            if (times <= 0) return;
+            playSound(settings.alarmSound, 1.5);
+            if (times > 1) {
+              setTimeout(() => playAlarmSound(times - 1, delay), delay);
+            }
+          };
+          playAlarmSound(3, 800); // 播放3遍，间隔800ms
           
           // 弹窗提醒
           const label = alarm.label || (settings.language === 'zh' ? '闹钟' : 'Alarm');
@@ -323,7 +336,7 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
     // 每秒检测一次
     const interval = setInterval(checkAlarms, 1000);
     return () => clearInterval(interval);
-  }, [settings.alarms, settings.utcOffset, settings.language, settings.notificationEnabled, settings.alarmNotification]);
+  }, [settings.alarms, settings.utcOffset, settings.language, settings.notificationEnabled, settings.alarmNotification, settings.alarmSound]);
 
   return (
     <ClockContext.Provider value={{

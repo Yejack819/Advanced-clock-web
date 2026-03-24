@@ -15,6 +15,7 @@ import { t } from '@/lib/i18n';
 import { X, Bell, Timer, Play, Pause, RotateCcw, Volume2, Clock, Trash2, BellRing, BellOff, Plus, Check, Pencil } from 'lucide-react';
 import { SOUND_OPTIONS, playSound } from '@/lib/soundManager';
 import { getCountdownHistory, addCountdownHistory, removeCountdownHistory, formatCountdownDuration, getMostFrequentCountdown } from '@/lib/countdownHistory';
+import { getAlarmHistory, removeAlarmHistory, getMostFrequentAlarm } from '@/lib/alarmHistory';
 import {
   isNotificationSupported,
   getNotificationPermission,
@@ -29,6 +30,7 @@ export default function AlarmCountdownPanel() {
   const [countdownMinutes, setCountdownMinutes] = useState(settings.countdownMinutes || 5);
   const [countdownSeconds, setCountdownSeconds] = useState(0);
   const [countdownHistory, setCountdownHistory] = useState(getCountdownHistory());
+  const [alarmHistory, setAlarmHistory] = useState(getAlarmHistory());
   const prevCountdownRunningRef = useRef(countdownRunning);
   const hasAlertedRef = useRef(false);
   const [visible, setVisible] = useState(false);
@@ -52,6 +54,7 @@ export default function AlarmCountdownPanel() {
   useEffect(() => {
     const interval = setInterval(() => {
       setRefreshTick(t => t + 1);
+      setAlarmHistory(getAlarmHistory()); // 同时刷新闹钟历史
     }, 60000); // 每分钟刷新
     return () => clearInterval(interval);
   }, []);
@@ -496,10 +499,13 @@ export default function AlarmCountdownPanel() {
               <button
                 onClick={() => {
                   const newId = Date.now().toString();
-                  const newAlarms = [...settings.alarms, { id: newId, time: '08:00', enabled: true, label: '' }];
+                  // 自动填充最常用的闹钟时间
+                  const mostFrequent = getMostFrequentAlarm();
+                  const defaultTime = mostFrequent?.time || '08:00';
+                  const newAlarms = [...settings.alarms, { id: newId, time: defaultTime, enabled: true, label: '' }];
                   updateSettings({ alarms: newAlarms });
                   setEditingAlarmId(newId);
-                  setEditAlarmTime('08:00');
+                  setEditAlarmTime(defaultTime);
                   setEditAlarmLabel('');
                 }}
                 className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-md transition-all active:scale-95"
@@ -512,6 +518,103 @@ export default function AlarmCountdownPanel() {
                 <Plus size={16} />
                 {settings.language === 'zh' ? '添加闹钟' : 'Add Alarm'}
               </button>
+
+              {/* 闹钟声音选择 */}
+              <div className="space-y-2">
+                <label className="text-sm flex items-center gap-2" style={{ color: styles.panel.labelColor }}>
+                  <Volume2 size={14} />
+                  {settings.language === 'zh' ? '闹钟声音' : 'Alarm Sound'}
+                </label>
+                <select
+                  value={settings.alarmSound}
+                  onChange={e => updateSettings({ alarmSound: e.target.value as any })}
+                  className="w-full rounded-md px-3 py-2 text-sm outline-none transition-colors"
+                  style={{
+                    background: styles.panel.inputBg,
+                    border: `1px solid ${styles.panel.inputBorder}`,
+                    color: styles.panel.textColor,
+                  }}
+                >
+                  {SOUND_OPTIONS.map(option => (
+                    <option key={option.id} value={option.id}>
+                      {settings.language === 'zh' ? option.label : option.labelEn}
+                    </option>
+                  ))}
+                </select>
+                {settings.alarmSound !== 'mute' && (
+                  <button
+                    onClick={() => {
+                      // 播放3遍预览
+                      const playPreview = (times: number) => {
+                        if (times <= 0) return;
+                        playSound(settings.alarmSound, 1.5);
+                        if (times > 1) {
+                          setTimeout(() => playPreview(times - 1), 800);
+                        }
+                      };
+                      playPreview(3);
+                    }}
+                    className="w-full py-2 rounded-md text-sm transition-all active:scale-95"
+                    style={{
+                      background: isLightBackground ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)',
+                      border: isLightBackground ? '1px solid rgba(0,0,0,0.12)' : '1px solid rgba(255,255,255,0.12)',
+                      color: styles.panel.labelColor,
+                    }}
+                  >
+                    {settings.language === 'zh' ? '试听（播放3遍）' : 'Preview (3 times)'}
+                  </button>
+                )}
+              </div>
+
+              {/* 闹钟历史 */}
+              {alarmHistory.length > 0 && (
+                <div className="space-y-2 pt-2" style={{ borderTop: `1px solid ${styles.panel.borderBottom}` }}>
+                  <label className="text-sm flex items-center gap-2" style={{ color: styles.panel.labelColor }}>
+                    <Clock size={14} />
+                    {settings.language === 'zh' ? '常用闹钟' : 'Frequent Alarms'}
+                  </label>
+                  <div className="space-y-2 max-h-32 overflow-y-auto">
+                    {alarmHistory.slice(0, 6).map(item => (
+                      <div
+                        key={item.id}
+                        className="flex items-center justify-between p-2 rounded-md transition-all hover:opacity-80"
+                        style={{
+                          background: isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)',
+                          border: isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.1)',
+                        }}
+                      >
+                        <button
+                          onClick={() => {
+                            const newId = Date.now().toString();
+                            const newAlarms = [...settings.alarms, { id: newId, time: item.time, enabled: true, label: '' }];
+                            updateSettings({ alarms: newAlarms });
+                            setEditingAlarmId(newId);
+                            setEditAlarmTime(item.time);
+                            setEditAlarmLabel('');
+                          }}
+                          className="flex-1 text-left text-sm transition-all active:scale-95"
+                          style={{ color: styles.panel.textColor }}
+                        >
+                          <span className="font-mono font-medium">{item.time}</span>
+                          <span className="text-xs ml-2" style={{ color: styles.panel.labelColor }}>
+                            (x{item.usageCount})
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            removeAlarmHistory(item.id);
+                            setAlarmHistory(getAlarmHistory());
+                          }}
+                          className="p-1 rounded transition-all hover:opacity-70"
+                          style={{ color: '#ef4444' }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* 提示信息 */}
               {settings.alarms.filter(a => a.enabled).length > 0 && (
