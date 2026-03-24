@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { SoundType } from '@/lib/soundManager';
+import { SoundType, playSound } from '@/lib/soundManager';
+import { sendAlarmNotification } from '@/lib/notificationManager';
 
 // Available font options with Chinese names
 export const FONT_OPTIONS = [
@@ -262,6 +263,67 @@ export function ClockProvider({ children }: { children: React.ReactNode }) {
     };
     updateSettings(themes[theme]);
   }, [updateSettings]);
+
+  // 全局闹钟检测 - 始终运行
+  const alarmTriggeredRef = useRef<Set<string>>(new Set());
+  
+  useEffect(() => {
+    const checkAlarms = () => {
+      const enabledAlarms = settings.alarms.filter(a => a.enabled);
+      if (enabledAlarms.length === 0) return;
+      
+      const now = new Date();
+      
+      // 计算UTC调整后的时间
+      const localOffsetMinutes = now.getTimezoneOffset();
+      const localOffsetHours = -localOffsetMinutes / 60;
+      const adjustHours = settings.utcOffset - localOffsetHours;
+      
+      let currentHours = now.getHours() + adjustHours;
+      const currentMinutes = now.getMinutes();
+      
+      while (currentHours >= 24) currentHours -= 24;
+      while (currentHours < 0) currentHours += 24;
+      
+      const currentTime = `${Math.floor(currentHours).toString().padStart(2, '0')}:${currentMinutes.toString().padStart(2, '0')}`;
+      
+      enabledAlarms.forEach(alarm => {
+        if (currentTime === alarm.time && !alarmTriggeredRef.current.has(alarm.id)) {
+          // 标记此闹钟已触发
+          alarmTriggeredRef.current.add(alarm.id);
+          
+          // 发送桌面通知
+          if (settings.notificationEnabled && settings.alarmNotification) {
+            sendAlarmNotification(alarm.time, settings.language, alarm.label);
+          }
+          
+          // 播放声音
+          playSound('beep', 1.5);
+          
+          // 弹窗提醒
+          const label = alarm.label || (settings.language === 'zh' ? '闹钟' : 'Alarm');
+          setTimeout(() => {
+            alert(`${label}: ${alarm.time}`);
+          }, 100);
+        }
+      });
+      
+      // 当时间变化时，清除已过时间的触发标记
+      // 只保留当前时间匹配的闹钟ID
+      const currentTimeAlarmIds = enabledAlarms
+        .filter(a => a.time === currentTime)
+        .map(a => a.id);
+      
+      if (currentTimeAlarmIds.length === 0) {
+        // 当前时间没有闹钟，清空所有触发标记
+        alarmTriggeredRef.current.clear();
+      }
+    };
+
+    // 每秒检测一次
+    const interval = setInterval(checkAlarms, 1000);
+    return () => clearInterval(interval);
+  }, [settings.alarms, settings.utcOffset, settings.language, settings.notificationEnabled, settings.alarmNotification]);
 
   return (
     <ClockContext.Provider value={{

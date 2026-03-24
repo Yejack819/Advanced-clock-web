@@ -20,8 +20,6 @@ import {
   getNotificationPermission,
   requestNotificationPermission,
   sendCountdownNotification,
-  sendAlarmNotification,
-  getPermissionStatusText,
 } from '@/lib/notificationManager';
 
 export default function AlarmCountdownPanel() {
@@ -35,7 +33,6 @@ export default function AlarmCountdownPanel() {
   const hasAlertedRef = useRef(false);
   const [visible, setVisible] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermission>(getNotificationPermission());
-  const alarmTriggeredRef = useRef<Set<string>>(new Set()); // 记录已触发的闹钟ID，防止重复触发
   
   // 闹钟编辑状态
   const [editingAlarmId, setEditingAlarmId] = useState<string | null>(null);
@@ -172,59 +169,6 @@ export default function AlarmCountdownPanel() {
     }
   };
 
-  // 获取当前UTC调整后的时间字符串
-  const getCurrentUTCTime = (): string => {
-    const now = new Date();
-    const localOffsetMinutes = now.getTimezoneOffset();
-    const localOffsetHours = -localOffsetMinutes / 60;
-    const adjustHours = settings.utcOffset - localOffsetHours;
-    
-    let currentHours = now.getHours() + adjustHours;
-    const currentMinutes = now.getMinutes();
-    
-    while (currentHours >= 24) currentHours -= 24;
-    while (currentHours < 0) currentHours += 24;
-    
-    return `${Math.floor(currentHours).toString().padStart(2, '0')}:${currentMinutes.toString().padStart(2, '0')}`;
-  };
-
-  // Alarm check - 支持多个闹钟（使用UTC时间）
-  useEffect(() => {
-    const enabledAlarms = settings.alarms.filter(a => a.enabled);
-    if (enabledAlarms.length === 0) return;
-    
-    const checkAlarm = () => {
-      const currentTime = getCurrentUTCTime();
-      
-      enabledAlarms.forEach(alarm => {
-        if (currentTime === alarm.time && !alarmTriggeredRef.current.has(alarm.id)) {
-          // 标记此闹钟已触发
-          alarmTriggeredRef.current.add(alarm.id);
-          
-          // 发送桌面通知
-          if (settings.notificationEnabled && settings.alarmNotification) {
-            sendAlarmNotification(alarm.time, settings.language, alarm.label);
-          }
-          
-          // 播放声音并弹窗
-          playAlarmSound();
-          const label = alarm.label || (settings.language === 'zh' ? '闹钟' : 'Alarm');
-          alert(`${label}: ${alarm.time}`);
-        }
-      });
-      
-      // 清除已过时间的触发标记
-      alarmTriggeredRef.current = new Set(
-        enabledAlarms
-          .filter(a => a.time === currentTime)
-          .map(a => a.id)
-      );
-    };
-
-    const interval = setInterval(checkAlarm, 1000);
-    return () => clearInterval(interval);
-  }, [settings.alarms, settings.language, settings.notificationEnabled, settings.alarmNotification, settings.utcOffset]);
-
   // Countdown timer alert when finished
   useEffect(() => {
     // Only alert when countdown finishes (reaches 0 from running state)
@@ -246,24 +190,6 @@ export default function AlarmCountdownPanel() {
     
     prevCountdownRunningRef.current = countdownRunning;
   }, [countdownRemaining, countdownRunning, settings.language, settings.countdownSound, settings.notificationEnabled, settings.countdownNotification]);
-
-  const playAlarmSound = () => {
-    // Simple beep using Web Audio API
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-    
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.5);
-  };
 
   const playCountdownFinishSound = () => {
     // Play the selected countdown sound
