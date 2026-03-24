@@ -41,11 +41,22 @@ export default function AlarmCountdownPanel() {
   const [editingAlarmId, setEditingAlarmId] = useState<string | null>(null);
   const [editAlarmTime, setEditAlarmTime] = useState('08:00');
   const [editAlarmLabel, setEditAlarmLabel] = useState('');
+  
+  // 剩余时间刷新状态
+  const [, setRefreshTick] = useState(0);
 
   // Mount animation
   useEffect(() => {
     const id = requestAnimationFrame(() => setVisible(true));
     return () => cancelAnimationFrame(id);
+  }, []);
+
+  // 每分钟刷新剩余时间显示
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefreshTick(t => t + 1);
+    }, 60000); // 每分钟刷新
+    return () => clearInterval(interval);
   }, []);
 
   const handleClose = () => {
@@ -87,14 +98,103 @@ export default function AlarmCountdownPanel() {
     return brightness > 128;
   })();
 
-  // Alarm check - 支持多个闹钟
+  // 计算闹钟剩余时间（使用UTC偏移）
+  const getAlarmRemaining = (alarmTime: string): { hours: number; minutes: number; isNextDay: boolean } => {
+    const now = new Date();
+    
+    // 计算本地时区偏移
+    const localOffsetMinutes = now.getTimezoneOffset();
+    const localOffsetHours = -localOffsetMinutes / 60;
+    
+    // 计算调整后的小时
+    const adjustHours = settings.utcOffset - localOffsetHours;
+    let currentHours = now.getHours() + adjustHours;
+    const currentMinutes = now.getMinutes();
+    
+    // 处理跨天
+    let dayOffset = 0;
+    while (currentHours >= 24) {
+      dayOffset++;
+      currentHours -= 24;
+    }
+    while (currentHours < 0) {
+      dayOffset--;
+      currentHours += 24;
+    }
+    
+    // 解析闹钟时间
+    const [alarmHours, alarmMinutes] = alarmTime.split(':').map(Number);
+    
+    // 计算剩余分钟数
+    const currentTotalMinutes = currentHours * 60 + currentMinutes;
+    const alarmTotalMinutes = alarmHours * 60 + alarmMinutes;
+    
+    let diffMinutes = alarmTotalMinutes - currentTotalMinutes;
+    let isNextDay = false;
+    
+    // 如果闹钟时间已过，计算到明天的剩余时间
+    if (diffMinutes <= 0) {
+      diffMinutes += 24 * 60;
+      isNextDay = true;
+    }
+    
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    
+    return { hours, minutes, isNextDay };
+  };
+
+  // 格式化剩余时间显示
+  const formatAlarmRemaining = (alarmTime: string): string => {
+    const { hours, minutes, isNextDay } = getAlarmRemaining(alarmTime);
+    const lang = settings.language;
+    
+    if (isNextDay) {
+      if (lang === 'zh') {
+        return `还有（明天${hours}小时）${minutes}分钟提醒`;
+      } else {
+        return `(tomorrow ${hours}h) ${minutes}m until alarm`;
+      }
+    } else {
+      if (lang === 'zh') {
+        if (hours > 0) {
+          return `还有（${hours}小时）${minutes}分钟提醒`;
+        } else {
+          return `还有${minutes}分钟提醒`;
+        }
+      } else {
+        if (hours > 0) {
+          return `(${hours}h) ${minutes}m until alarm`;
+        } else {
+          return `${minutes}m until alarm`;
+        }
+      }
+    }
+  };
+
+  // 获取当前UTC调整后的时间字符串
+  const getCurrentUTCTime = (): string => {
+    const now = new Date();
+    const localOffsetMinutes = now.getTimezoneOffset();
+    const localOffsetHours = -localOffsetMinutes / 60;
+    const adjustHours = settings.utcOffset - localOffsetHours;
+    
+    let currentHours = now.getHours() + adjustHours;
+    const currentMinutes = now.getMinutes();
+    
+    while (currentHours >= 24) currentHours -= 24;
+    while (currentHours < 0) currentHours += 24;
+    
+    return `${Math.floor(currentHours).toString().padStart(2, '0')}:${currentMinutes.toString().padStart(2, '0')}`;
+  };
+
+  // Alarm check - 支持多个闹钟（使用UTC时间）
   useEffect(() => {
     const enabledAlarms = settings.alarms.filter(a => a.enabled);
     if (enabledAlarms.length === 0) return;
     
     const checkAlarm = () => {
-      const now = new Date();
-      const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+      const currentTime = getCurrentUTCTime();
       
       enabledAlarms.forEach(alarm => {
         if (currentTime === alarm.time && !alarmTriggeredRef.current.has(alarm.id)) {
@@ -123,7 +223,7 @@ export default function AlarmCountdownPanel() {
 
     const interval = setInterval(checkAlarm, 1000);
     return () => clearInterval(interval);
-  }, [settings.alarms, settings.language, settings.notificationEnabled, settings.alarmNotification]);
+  }, [settings.alarms, settings.language, settings.notificationEnabled, settings.alarmNotification, settings.utcOffset]);
 
   // Countdown timer alert when finished
   useEffect(() => {
@@ -423,11 +523,18 @@ export default function AlarmCountdownPanel() {
                             <div className="text-lg font-mono font-medium" style={{ color: alarm.enabled ? styles.panel.textColor : styles.panel.labelColor }}>
                               {alarm.time}
                             </div>
-                            {alarm.label && (
-                              <div className="text-xs" style={{ color: styles.panel.labelColor }}>
-                                {alarm.label}
-                              </div>
-                            )}
+                            <div className="flex items-center gap-2">
+                              {alarm.label && (
+                                <span className="text-xs" style={{ color: styles.panel.labelColor }}>
+                                  {alarm.label}
+                                </span>
+                              )}
+                              {alarm.enabled && (
+                                <span className="text-xs" style={{ color: alarm.enabled ? '#60a5fa' : styles.panel.labelColor, opacity: 0.8 }}>
+                                  {formatAlarmRemaining(alarm.time)}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-1">
