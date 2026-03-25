@@ -8,8 +8,9 @@
  * - 快捷键支持: F(全屏) C(校准) S(隐藏秒)
  * - 完整的国际化支持
  * - 倒计时结束时的声音和屏幕闪烁效果
+ * - 启动动画：笔画绘制问候语
  */
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ClockProvider, useClock } from '@/contexts/ClockContext';
 import { t } from '@/lib/i18n';
 import { playSound, screenFlash } from '@/lib/soundManager';
@@ -18,10 +19,13 @@ import ControlBar from '@/components/ControlBar';
 import CalibrationPanel from '@/components/CalibrationPanel';
 import AlarmCountdownPanel from '@/components/AlarmCountdownPanel';
 import DateCountdownPanel from '@/components/DateCountdownPanel';
+import IntroAnimation from '@/components/IntroAnimation';
 
 function ClockPage() {
   const { settings, isFullscreen, showCalibration, showAlarmCountdown, showDateCountdownPanel, setShowDateCountdownPanel, countdownFinished, toggleFullscreen, setShowCalibration, updateSettings } = useClock();
   const prevCountdownFinishedRef = useRef(false);
+  const [showIntro, setShowIntro] = useState(true);
+  const [introComplete, setIntroComplete] = useState(false);
 
   // 颜色自适应逻辑
   useEffect(() => {
@@ -116,14 +120,30 @@ function ClockPage() {
   };
 
   return (
-    <div
-      className={`min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden ${isFullscreen ? 'fullscreen-mode' : ''}`}
-      style={{
-        backgroundColor: settings.bgColor,
-        transition: settings.autoColorMode ? 'background-color 3s ease-in-out' : 'background-color 0.3s ease',
-      }}
-      onDoubleClick={handleDoubleClick}
-    >
+    <>
+      {/* 启动动画 */}
+      {showIntro && (
+        <IntroAnimation
+          language={settings.language}
+          utcOffset={settings.utcOffset}
+          onComplete={() => {
+            setShowIntro(false);
+            setIntroComplete(true);
+          }}
+        />
+      )}
+      
+      {/* 主页面内容 */}
+      <div
+        className={`min-h-screen w-full flex flex-col items-center justify-center relative overflow-hidden ${isFullscreen ? 'fullscreen-mode' : ''}`}
+        style={{
+          backgroundColor: settings.bgColor,
+          transition: settings.autoColorMode ? 'background-color 3s ease-in-out' : 'background-color 0.3s ease',
+          opacity: introComplete ? 1 : 0,
+          transitionProperty: introComplete ? 'opacity, background-color' : 'opacity',
+        }}
+        onDoubleClick={handleDoubleClick}
+      >
       {/* Subtle vignette effect */}
       <div
         className="fixed inset-0 pointer-events-none"
@@ -172,7 +192,8 @@ function ClockPage() {
           {t(settings.language, 'shortcutsFullscreen')}
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }
 
