@@ -53,12 +53,13 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
   useEffect(() => {
     // 阶段1: 全黑 (0.3s)
     const t1 = setTimeout(() => setPhase('drawing'), 300);
-    // 阶段2: 绘制动画 (2.2s)
-    const t2 = setTimeout(() => setPhase('filling'), 2500);
-    // 阶段3: 填充 (0.6s)
-    const t3 = setTimeout(() => setPhase('fading'), 3100);
-    // 阶段4: 淡出 (0.6s) 后完成
-    const t4 = setTimeout(() => handleComplete(), 3700);
+    // 阶段2: 绘制动画 (3.5s，更慢的描边)
+    // 阶段3: 填充 (描边快结束时开始，间隔更小)
+    const t2 = setTimeout(() => setPhase('filling'), 3600);
+    // 阶段4: 淡出 (0.6s)
+    const t3 = setTimeout(() => setPhase('fading'), 4200);
+    // 阶段5: 完成
+    const t4 = setTimeout(() => handleComplete(), 4800);
 
     return () => {
       clearTimeout(t1);
@@ -137,13 +138,13 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
         .stroke-animate {
           stroke-dasharray: 1000;
           stroke-dashoffset: 1000;
-          animation: strokeDraw 2.2s ease-out forwards;
+          animation: strokeDraw 3.5s ease-out forwards;
         }
         
         .stroke-animate-sub {
           stroke-dasharray: 500;
           stroke-dashoffset: 500;
-          animation: strokeDrawSub 1.5s ease-out 0.3s forwards;
+          animation: strokeDrawSub 2.5s ease-out 0.3s forwards;
         }
         
         .fill-animate {
