@@ -21,7 +21,7 @@ function padTwo(n: number): string {
 
 export default function ClockDisplay() {
   const { settings, countdownRemaining, countdownRunning, isFullscreen } = useClock();
-  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, utcOffset, dateFontRatio, showDateCountdown, dateCountdownTargets, dateCountdownInterval, language } = settings;
+  const { fontSize, fontFamily, fontColor, bgColor, hideSeconds, showDate, calibrationOffset, lineHeight, letterSpacing, animationSpeed, utcOffset, dateFontRatio, showDateCountdown, dateCountdownTargets, dateCountdownInterval, language, use24Hour } = settings;
   const [carouselIndex, setCarouselIndex] = useState(0);
   // 'idle' = visible centered | 'exit' = sliding out left/right | 'enter-pre' = instant offset (no transition) | 'enter' = sliding in to center
   const [carouselSlide, setCarouselSlide] = useState<'idle' | 'exit' | 'enter-pre' | 'enter'>('idle');
@@ -160,6 +160,12 @@ export default function ClockDisplay() {
     const adjustedHours = Math.floor(totalMinutes / 60);
     const adjustedMinutes = totalMinutes % 60;
     
+    // 12小时制计算
+    const isPM = adjustedHours >= 12;
+    const displayHours = use24Hour 
+      ? adjustedHours 
+      : (adjustedHours % 12 || 12); // 0点或12点都显示12
+    
     // 9. 计算调整后的日期
     const adjustedDateObj = new Date(localYear, localMonth, localDate);
     adjustedDateObj.setDate(adjustedDateObj.getDate() + dayOffset);
@@ -170,13 +176,14 @@ export default function ClockDisplay() {
     while (adjustedDay > 6) adjustedDay -= 7;
     
     return {
-      hours: padTwo(adjustedHours),
+      hours: padTwo(displayHours),
       minutes: padTwo(adjustedMinutes),
       seconds: hideSeconds ? '00' : padTwo(localSeconds),
       year: adjustedDateObj.getFullYear(),
       month: adjustedDateObj.getMonth() + 1,
       day: adjustedDateObj.getDate(),
       weekday: adjustedDay,
+      period: isPM ? 'PM' : 'AM', // AM/PM 标识
     };
   };
 
@@ -221,7 +228,7 @@ export default function ClockDisplay() {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [calibrationOffset, hideSeconds, showDate, utcOffset]);
+  }, [calibrationOffset, hideSeconds, showDate, utcOffset, use24Hour]);
 
   const dateFontSize = fontSize / dateFontRatio;
   const digitHeight = fontSize * 1.15;
@@ -520,6 +527,33 @@ export default function ClockDisplay() {
 
       {/* Main clock display */}
       <div className="flex items-center justify-center">
+        {/* AM/PM indicator for 12-hour format */}
+        {!use24Hour && (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginRight: `${fontSize * 0.15}px`,
+              height: `${digitHeight}px`,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: fontFamily,
+                fontSize: `${fontSize * 0.15}px`,
+                fontWeight: 400,
+                color: fontColor,
+                opacity: 0.7,
+                letterSpacing: '0.05em',
+              }}
+            >
+              {language === 'zh' ? (time.period === 'AM' ? '上午' : '下午') : time.period}
+            </div>
+          </div>
+        )}
+        
         {/* Hours */}
         <DigitRoller
           digit={time.hours[0]}

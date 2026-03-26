@@ -126,6 +126,7 @@ function ClockPage() {
         <IntroAnimation
           language={settings.language}
           utcOffset={settings.utcOffset}
+          use24Hour={settings.use24Hour}
           onComplete={() => {
             setShowIntro(false);
             setIntroComplete(true);

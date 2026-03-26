@@ -538,6 +538,34 @@ export default function ControlBar() {
               </div>
             </ControlGroup>
 
+            {/* Time Format - 12/24 Hour */}
+            <ControlGroup icon={<Clock size={14} />} label={t(settings.language, 'timeFormat')} textColor={panelStyle.textColor} labelColor={panelStyle.labelColor} iconColor={panelStyle.iconColor}>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => updateSettings({ use24Hour: true })}
+                  className="flex-1 px-3 py-1.5 rounded-md text-sm transition-all duration-200 active:scale-95"
+                  style={{
+                    background: settings.use24Hour ? 'rgba(59, 130, 246, 0.15)' : (isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
+                    border: settings.use24Hour ? '1px solid rgba(59, 130, 246, 0.3)' : (isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
+                    color: settings.use24Hour ? 'rgba(59, 130, 246, 0.8)' : (isLightBackground ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
+                  }}
+                >
+                  {t(settings.language, 'hour24')}
+                </button>
+                <button
+                  onClick={() => updateSettings({ use24Hour: false })}
+                  className="flex-1 px-3 py-1.5 rounded-md text-sm transition-all duration-200 active:scale-95"
+                  style={{
+                    background: !settings.use24Hour ? 'rgba(59, 130, 246, 0.15)' : (isLightBackground ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.03)'),
+                    border: !settings.use24Hour ? '1px solid rgba(59, 130, 246, 0.3)' : (isLightBackground ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.08)'),
+                    color: !settings.use24Hour ? 'rgba(59, 130, 246, 0.8)' : (isLightBackground ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.5)'),
+                  }}
+                >
+                  {t(settings.language, 'hour12')}
+                </button>
+              </div>
+            </ControlGroup>
+
           </div>
         </div>
       </div>

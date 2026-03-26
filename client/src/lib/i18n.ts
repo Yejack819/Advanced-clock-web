@@ -82,6 +82,11 @@ export const translations = {
     // 快捷键提示
     'shortcutsFullscreen': '快捷键: F(全屏) C(校准) S(隐藏秒)',
     'shortcutsExit': '按 ESC 退出全屏 | F 全屏 | C 校准 | S 隐藏秒',
+    
+    // 时间格式
+    'timeFormat': '时间格式',
+    'hour24': '24小时',
+    'hour12': '12小时',
   },
   en: {
     // 控制面板标签
@@ -159,6 +164,11 @@ export const translations = {
     // 快捷键提示
     'shortcutsFullscreen': 'Shortcuts: F(fullscreen) C(calibrate) S(hide seconds)',
     'shortcutsExit': 'Press ESC to exit fullscreen | F fullscreen | C calibrate | S hide seconds',
+    
+    // 时间格式
+    'timeFormat': 'Time Format',
+    'hour24': '24-Hour',
+    'hour12': '12-Hour',
   },
 };
 

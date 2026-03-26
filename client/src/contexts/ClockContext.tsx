@@ -52,6 +52,7 @@ export interface ClockSettings {
   countdownNotification: boolean; // 倒计时结束是否发送桌面通知
   autoColorMode: boolean; // 是否启用颜色自适应（白天白底黑字，晚上黑底白字）
   doubleClickFullscreen: boolean; // 是否启用双击全屏
+  use24Hour: boolean; // 是否使用24小时制
 }
 
 const DEFAULT_SETTINGS: ClockSettings = {
@@ -83,6 +84,7 @@ const DEFAULT_SETTINGS: ClockSettings = {
   countdownNotification: true,
   autoColorMode: false,
   doubleClickFullscreen: true,
+  use24Hour: true,
 };
 
 const STORAGE_KEY = 'advanced-clock-settings';

@@ -4,9 +4,10 @@
  * 动画流程：
  * 1. 全黑背景
  * 2. 文字描边绘制动画（笔画效果）
- * 3. 文字填充渐变
- * 4. 整体淡出
- * 5. 显示主页面
+ * 3. 1秒后时间描边动画开始
+ * 4. 文字填充渐变（同时）
+ * 5. 整体淡出
+ * 6. 显示主页面
  */
 import { useEffect, useState, useMemo, useCallback } from 'react';
 
@@ -14,6 +15,7 @@ interface IntroAnimationProps {
   onComplete: () => void;
   language: 'zh' | 'en';
   utcOffset: number;
+  use24Hour: boolean;
 }
 
 // 根据时间获取问候语
@@ -33,16 +35,33 @@ function getGreeting(hour: number, language: 'zh' | 'en'): { main: string; sub?:
   }
 }
 
-export default function IntroAnimation({ onComplete, language, utcOffset }: IntroAnimationProps) {
+// 格式化时间
+function formatTime(hour: number, minute: number, use24Hour: boolean, language: 'zh' | 'en'): string {
+  if (use24Hour) {
+    return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+  } else {
+    const period = hour >= 12 ? (language === 'zh' ? '下午' : 'PM') : (language === 'zh' ? '上午' : 'AM');
+    let displayHour = hour % 12;
+    if (displayHour === 0) displayHour = 12;
+    const timeStr = `${displayHour}:${minute.toString().padStart(2, '0')}`;
+    return language === 'zh' ? `${period} ${timeStr}` : `${timeStr} ${period}`;
+  }
+}
+
+export default function IntroAnimation({ onComplete, language, utcOffset, use24Hour }: IntroAnimationProps) {
   const [phase, setPhase] = useState<'black' | 'drawing' | 'filling' | 'fading'>('black');
   
-  // 计算当前时间的问候语
-  const greeting = useMemo(() => {
+  // 计算当前时间的问候语和时间
+  const { greeting, currentTime } = useMemo(() => {
     const now = new Date();
     const utcHour = now.getUTCHours();
+    const utcMinute = now.getUTCMinutes();
     const currentHour = (utcHour + utcOffset + 24) % 24;
-    return getGreeting(currentHour, language);
-  }, [language, utcOffset]);
+    return {
+      greeting: getGreeting(currentHour, language),
+      currentTime: formatTime(currentHour, utcMinute, use24Hour, language),
+    };
+  }, [language, utcOffset, use24Hour]);
 
   // 动画完成回调
   const handleComplete = useCallback(() => {
@@ -70,13 +89,14 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
   }, [handleComplete]);
 
   // 计算文字大小
-  const mainFontSize = language === 'zh' ? 100 : 80;
-  const subFontSize = 50;
+  const mainFontSize = language === 'zh' ? 80 : 70;
+  const timeFontSize = language === 'zh' ? 50 : 45;
+  const subFontSize = 40;
   const isEnglish = language === 'en';
   
   // SVG 尺寸
-  const svgWidth = isEnglish ? 520 : 420;
-  const svgHeight = isEnglish ? 200 : 160;
+  const svgWidth = isEnglish ? 480 : 420;
+  const svgHeight = isEnglish ? 240 : 220;
 
   return (
     <div
@@ -96,6 +116,15 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
         @keyframes strokeDraw {
           0% {
             stroke-dashoffset: 1000;
+          }
+          100% {
+            stroke-dashoffset: 0;
+          }
+        }
+        
+        @keyframes strokeDrawTime {
+          0% {
+            stroke-dashoffset: 500;
           }
           100% {
             stroke-dashoffset: 0;
@@ -135,10 +164,20 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
             : "'JetBrains Mono', 'Roboto Mono', monospace"};
         }
         
+        .time-text {
+          font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
+        }
+        
         .stroke-animate {
           stroke-dasharray: 1000;
           stroke-dashoffset: 1000;
           animation: strokeDraw 3.5s ease-out forwards;
+        }
+        
+        .stroke-animate-time {
+          stroke-dasharray: 500;
+          stroke-dashoffset: 500;
+          animation: strokeDrawTime 2.5s ease-out forwards;
         }
         
         .stroke-animate-sub {
@@ -164,7 +203,7 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
           width: `${svgWidth}px`,
           height: `${svgHeight}px`,
           maxWidth: '90vw',
-          maxHeight: '30vh',
+          maxHeight: '40vh',
         }}
       >
         <defs>
@@ -185,10 +224,10 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
           </filter>
         </defs>
 
-        {/* 主文字 - 描边层 */}
+        {/* 问候语 - 描边层 */}
         <text
           x="50%"
-          y={isEnglish ? 90 : 95}
+          y={isEnglish ? 80 : 75}
           textAnchor="middle"
           dominantBaseline="middle"
           className={`greeting-text ${phase === 'drawing' ? 'stroke-animate' : ''}`}
@@ -207,10 +246,10 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
           {greeting.main}
         </text>
 
-        {/* 主文字 - 填充层 */}
+        {/* 问候语 - 填充层 */}
         <text
           x="50%"
-          y={isEnglish ? 90 : 95}
+          y={isEnglish ? 80 : 75}
           textAnchor="middle"
           dominantBaseline="middle"
           className={`greeting-text ${phase === 'filling' ? 'fill-animate' : ''}`}
@@ -227,13 +266,55 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
           {greeting.main}
         </text>
 
+        {/* 时间显示 - 描边层 (延迟1秒开始) */}
+        <text
+          x="50%"
+          y={isEnglish ? 135 : 130}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          className={`time-text ${phase === 'drawing' ? 'stroke-animate-time' : ''}`}
+          style={{
+            fontSize: `${timeFontSize}px`,
+            fontWeight: 300,
+            letterSpacing: '0.15em',
+            fill: 'transparent',
+            stroke: '#ffffff',
+            strokeWidth: phase === 'filling' ? 0 : 1,
+            opacity: phase === 'black' ? 0 : 0.9,
+            transition: 'stroke-width 0.4s ease-out',
+            animationDelay: '1s',
+          }}
+        >
+          {currentTime}
+        </text>
+
+        {/* 时间显示 - 填充层 */}
+        <text
+          x="50%"
+          y={isEnglish ? 135 : 130}
+          textAnchor="middle"
+          dominantBaseline="middle"
+          className={`time-text ${phase === 'filling' ? 'fill-animate' : ''}`}
+          style={{
+            fontSize: `${timeFontSize}px`,
+            fontWeight: 300,
+            letterSpacing: '0.15em',
+            fill: 'url(#textGradient)',
+            fillOpacity: phase === 'filling' || phase === 'fading' ? 1 : 0,
+            opacity: phase === 'black' ? 0 : 0.9,
+            transition: 'fill-opacity 0.6s ease-out',
+          }}
+        >
+          {currentTime}
+        </text>
+
         {/* 英文副文字 */}
         {isEnglish && greeting.sub && (
           <>
             {/* 副文字 - 描边层 */}
             <text
               x="50%"
-              y="155"
+              y="190"
               textAnchor="middle"
               dominantBaseline="middle"
               className={phase === 'drawing' ? 'stroke-animate-sub' : ''}
@@ -255,7 +336,7 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
             {/* 副文字 - 填充层 */}
             <text
               x="50%"
-              y="155"
+              y="190"
               textAnchor="middle"
               dominantBaseline="middle"
               className={phase === 'filling' ? 'fill-animate' : ''}
@@ -278,10 +359,10 @@ export default function IntroAnimation({ onComplete, language, utcOffset }: Intr
         {/* 中文装饰线 */}
         {!isEnglish && (
           <line
-            x1="120"
-            y1="135"
-            x2="300"
-            y2="135"
+            x1="100"
+            y1="175"
+            x2="320"
+            y2="175"
             className={phase === 'filling' ? 'line-animate' : ''}
             style={{
               stroke: '#ffffff',
