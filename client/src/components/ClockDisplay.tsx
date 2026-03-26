@@ -184,6 +184,7 @@ export default function ClockDisplay() {
       day: adjustedDateObj.getDate(),
       weekday: adjustedDay,
       period: isPM ? 'PM' : 'AM', // AM/PM 标识
+      hour24: adjustedHours, // 24小时制的小时数，用于时段判断
     };
   };
 
@@ -267,6 +268,19 @@ export default function ClockDisplay() {
     
     // 英文使用设置的字体
     return fontFamily;
+  };
+
+  // 获取时段文本（中文：凌晨/上午/下午/晚上，英文：AM/PM）
+  const getPeriodText = () => {
+    if (language === 'en') {
+      return time.period; // 英文保持 AM/PM
+    }
+    // 中文根据时间段显示
+    const hour = time.hour24;
+    if (hour >= 0 && hour < 6) return '凌晨';
+    if (hour >= 6 && hour < 12) return '上午';
+    if (hour >= 12 && hour < 18) return '下午';
+    return '晚上';
   };
 
   return (
@@ -526,53 +540,27 @@ export default function ClockDisplay() {
       )}
 
       {/* Main clock display */}
-      <div className="flex items-center justify-center">
-        {/* AM/PM indicator for 12-hour format */}
-        {!use24Hour && (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              marginRight: `${fontSize * 0.15}px`,
-              height: `${digitHeight}px`,
-            }}
-          >
-            <div
-              style={{
-                fontFamily: fontFamily,
-                fontSize: `${fontSize * 0.15}px`,
-                fontWeight: 400,
-                color: fontColor,
-                opacity: 0.7,
-                letterSpacing: '0.05em',
-              }}
-            >
-              {language === 'zh' ? (time.period === 'AM' ? '上午' : '下午') : time.period}
-            </div>
-          </div>
-        )}
-        
-        {/* Hours */}
-        <DigitRoller
-          digit={time.hours[0]}
-          fontSize={fontSize}
-          fontFamily={fontFamily}
-          color={fontColor}
-          letterSpacing={letterSpacing}
-          lineHeight={lineHeight}
-          animationSpeed={animationSpeed}
-        />
-        <DigitRoller
-          digit={time.hours[1]}
-          fontSize={fontSize}
-          fontFamily={fontFamily}
-          color={fontColor}
-          letterSpacing={letterSpacing}
-          lineHeight={lineHeight}
-          animationSpeed={animationSpeed}
-        />
+      <div className="flex flex-col items-center justify-center">
+        <div className="flex items-center justify-center">
+          {/* Hours */}
+          <DigitRoller
+            digit={time.hours[0]}
+            fontSize={fontSize}
+            fontFamily={fontFamily}
+            color={fontColor}
+            letterSpacing={letterSpacing}
+            lineHeight={lineHeight}
+            animationSpeed={animationSpeed}
+          />
+          <DigitRoller
+            digit={time.hours[1]}
+            fontSize={fontSize}
+            fontFamily={fontFamily}
+            color={fontColor}
+            letterSpacing={letterSpacing}
+            lineHeight={lineHeight}
+            animationSpeed={animationSpeed}
+          />
 
         {/* Colon with breathing animation */}
         <div
@@ -677,6 +665,33 @@ export default function ClockDisplay() {
           lineHeight={lineHeight}
           animationSpeed={animationSpeed}
         />
+        </div>
+        
+        {/* Period indicator for 12-hour format - below clock, right aligned */}
+        {!use24Hour && (
+          <div
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              paddingRight: `${fontSize * 0.05}px`,
+              marginTop: `${fontSize * 0.02}px`,
+            }}
+          >
+            <div
+              style={{
+                fontFamily: fontFamily,
+                fontSize: `${fontSize * 0.12}px`,
+                fontWeight: 400,
+                color: fontColor,
+                opacity: 0.6,
+                letterSpacing: '0.1em',
+              }}
+            >
+              {getPeriodText()}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* CSS animation for breathing effect */}

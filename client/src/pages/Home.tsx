@@ -127,6 +127,7 @@ function ClockPage() {
           language={settings.language}
           utcOffset={settings.utcOffset}
           use24Hour={settings.use24Hour}
+          fontFamily={settings.fontFamily}
           onComplete={() => {
             setShowIntro(false);
             setIntroComplete(true);

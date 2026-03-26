@@ -16,6 +16,7 @@ interface IntroAnimationProps {
   language: 'zh' | 'en';
   utcOffset: number;
   use24Hour: boolean;
+  fontFamily: string;
 }
 
 // 根据时间获取问候语
@@ -48,7 +49,7 @@ function formatTime(hour: number, minute: number, use24Hour: boolean, language: 
   }
 }
 
-export default function IntroAnimation({ onComplete, language, utcOffset, use24Hour }: IntroAnimationProps) {
+export default function IntroAnimation({ onComplete, language, utcOffset, use24Hour, fontFamily }: IntroAnimationProps) {
   const [phase, setPhase] = useState<'black' | 'drawing' | 'filling' | 'fading'>('black');
   
   // 计算当前时间的问候语和时间
@@ -97,6 +98,25 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
   // SVG 尺寸
   const svgWidth = isEnglish ? 480 : 420;
   const svgHeight = isEnglish ? 240 : 220;
+
+  // 获取问候语字体 - 使用设置的字体
+  const getGreetingFont = () => {
+    // 检查是否选中了中文字体
+    const isChineseFont = fontFamily.includes('Noto Sans SC') || 
+                          fontFamily.includes('Noto Serif SC') || 
+                          fontFamily.includes('LXGW WenKai');
+    
+    if (language === 'zh' && !isChineseFont) {
+      // 中文但未选中中文字体，使用默认中文字体
+      return "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    }
+    
+    // 使用用户设置的字体
+    return fontFamily;
+  };
+
+  // 时间字体 - 使用设置的字体
+  const getTimeFont = () => fontFamily;
 
   return (
     <div
@@ -156,16 +176,6 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
           100% {
             stroke-dashoffset: 0;
           }
-        }
-        
-        .greeting-text {
-          font-family: ${language === 'zh' 
-            ? "'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif"
-            : "'JetBrains Mono', 'Roboto Mono', monospace"};
-        }
-        
-        .time-text {
-          font-family: 'JetBrains Mono', 'Roboto Mono', monospace;
         }
         
         .stroke-animate {
@@ -232,6 +242,7 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
           dominantBaseline="middle"
           className={`greeting-text ${phase === 'drawing' ? 'stroke-animate' : ''}`}
           style={{
+            fontFamily: getGreetingFont(),
             fontSize: `${mainFontSize}px`,
             fontWeight: 400,
             letterSpacing: '0.08em',
@@ -254,6 +265,7 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
           dominantBaseline="middle"
           className={`greeting-text ${phase === 'filling' ? 'fill-animate' : ''}`}
           style={{
+            fontFamily: getGreetingFont(),
             fontSize: `${mainFontSize}px`,
             fontWeight: 400,
             letterSpacing: '0.08em',
@@ -274,6 +286,7 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
           dominantBaseline="middle"
           className={`time-text ${phase === 'drawing' ? 'stroke-animate-time' : ''}`}
           style={{
+            fontFamily: getTimeFont(),
             fontSize: `${timeFontSize}px`,
             fontWeight: 300,
             letterSpacing: '0.15em',
@@ -296,6 +309,7 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
           dominantBaseline="middle"
           className={`time-text ${phase === 'filling' ? 'fill-animate' : ''}`}
           style={{
+            fontFamily: getTimeFont(),
             fontSize: `${timeFontSize}px`,
             fontWeight: 300,
             letterSpacing: '0.15em',
@@ -319,7 +333,7 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
               dominantBaseline="middle"
               className={phase === 'drawing' ? 'stroke-animate-sub' : ''}
               style={{
-                fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+                fontFamily: getTimeFont(),
                 fontSize: `${subFontSize}px`,
                 fontWeight: 300,
                 letterSpacing: '0.15em',
@@ -341,7 +355,7 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
               dominantBaseline="middle"
               className={phase === 'filling' ? 'fill-animate' : ''}
               style={{
-                fontFamily: "'JetBrains Mono', 'Roboto Mono', monospace",
+                fontFamily: getTimeFont(),
                 fontSize: `${subFontSize}px`,
                 fontWeight: 300,
                 letterSpacing: '0.15em',
