@@ -675,16 +675,16 @@ export default function ClockDisplay() {
               display: 'flex',
               justifyContent: 'flex-end',
               paddingRight: `${fontSize * 0.05}px`,
-              marginTop: `${fontSize * 0.02}px`,
+              marginTop: `${fontSize * 0.05}px`,
             }}
           >
             <div
               style={{
                 fontFamily: fontFamily,
-                fontSize: `${fontSize * 0.12}px`,
-                fontWeight: 400,
+                fontSize: `${fontSize * 0.24}px`,
+                fontWeight: 700,
                 color: fontColor,
-                opacity: 0.6,
+                opacity: 0.85,
                 letterSpacing: '0.1em',
               }}
             >
