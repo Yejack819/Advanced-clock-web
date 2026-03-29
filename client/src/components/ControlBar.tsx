@@ -12,6 +12,7 @@
 import React, { useState, useRef } from 'react';
 import { useClock, FONT_OPTIONS, ClockSettings } from '@/contexts/ClockContext';
 import { t, getThemeName } from '@/lib/i18n';
+import { useIsMobile } from '@/hooks/useMobile';
 import {
   Maximize,
   Minimize,
@@ -35,6 +36,7 @@ import {
 export default function ControlBar() {
   const { settings, updateSettings, isFullscreen, toggleFullscreen, setShowCalibration, showCalibration, setShowAlarmCountdown, showAlarmCountdown, showDateCountdownPanel, setShowDateCountdownPanel, applyTheme } = useClock();
   const [expanded, setExpanded] = useState(false);
+  const isMobile = useIsMobile();
   
   // 退出全屏时自动收起
   React.useEffect(() => {
@@ -139,9 +141,9 @@ export default function ControlBar() {
 
       {/* Panel content */}
       <div
-        className="transition-all duration-400 overflow-hidden"
+        className={`transition-all duration-400 ${expanded && isMobile ? 'overflow-y-auto' : 'overflow-hidden'}`}
         style={{
-          maxHeight: expanded ? '700px' : '0px',
+          maxHeight: expanded ? (isMobile ? '60vh' : '700px') : '0px',
           background: panelStyle.background,
           backdropFilter: panelStyle.backdropFilter,
           WebkitBackdropFilter: panelStyle.WebkitBackdropFilter,
