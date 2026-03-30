@@ -90,14 +90,14 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
   }, [handleComplete]);
 
   // 计算文字大小
-  const mainFontSize = language === 'zh' ? 80 : 70;
-  const timeFontSize = language === 'zh' ? 50 : 45;
-  const subFontSize = 40;
+  const mainFontSize = language === 'zh' ? 100 : 90;
+  const timeFontSize = language === 'zh' ? 65 : 58;
+  const subFontSize = 52;
   const isEnglish = language === 'en';
   
   // SVG 尺寸
-  const svgWidth = isEnglish ? 480 : 420;
-  const svgHeight = isEnglish ? 240 : 220;
+  const svgWidth = isEnglish ? 540 : 480;
+  const svgHeight = isEnglish ? 280 : 260;
 
   // 获取问候语字体 - 使用设置的字体
   const getGreetingFont = () => {
@@ -237,14 +237,14 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
         {/* 问候语 - 描边层 */}
         <text
           x="50%"
-          y={isEnglish ? 80 : 75}
+          y={isEnglish ? 90 : 85}
           textAnchor="middle"
           dominantBaseline="middle"
           className={`greeting-text ${phase === 'drawing' ? 'stroke-animate' : ''}`}
           style={{
             fontFamily: getGreetingFont(),
             fontSize: `${mainFontSize}px`,
-            fontWeight: 400,
+            fontWeight: 700,
             letterSpacing: '0.08em',
             fill: 'transparent',
             stroke: '#ffffff',
@@ -260,14 +260,14 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
         {/* 问候语 - 填充层 */}
         <text
           x="50%"
-          y={isEnglish ? 80 : 75}
+          y={isEnglish ? 90 : 85}
           textAnchor="middle"
           dominantBaseline="middle"
           className={`greeting-text ${phase === 'filling' ? 'fill-animate' : ''}`}
           style={{
             fontFamily: getGreetingFont(),
             fontSize: `${mainFontSize}px`,
-            fontWeight: 400,
+            fontWeight: 700,
             letterSpacing: '0.08em',
             fill: 'url(#textGradient)',
             fillOpacity: phase === 'filling' || phase === 'fading' ? 1 : 0,
@@ -281,14 +281,14 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
         {/* 时间显示 - 描边层 (延迟1秒开始) */}
         <text
           x="50%"
-          y={isEnglish ? 135 : 130}
+          y={isEnglish ? 150 : 145}
           textAnchor="middle"
           dominantBaseline="middle"
           className={`time-text ${phase === 'drawing' ? 'stroke-animate-time' : ''}`}
           style={{
             fontFamily: getTimeFont(),
             fontSize: `${timeFontSize}px`,
-            fontWeight: 300,
+            fontWeight: 700,
             letterSpacing: '0.15em',
             fill: 'transparent',
             stroke: '#ffffff',
@@ -304,14 +304,14 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
         {/* 时间显示 - 填充层 */}
         <text
           x="50%"
-          y={isEnglish ? 135 : 130}
+          y={isEnglish ? 150 : 145}
           textAnchor="middle"
           dominantBaseline="middle"
           className={`time-text ${phase === 'filling' ? 'fill-animate' : ''}`}
           style={{
             fontFamily: getTimeFont(),
             fontSize: `${timeFontSize}px`,
-            fontWeight: 300,
+            fontWeight: 700,
             letterSpacing: '0.15em',
             fill: 'url(#textGradient)',
             fillOpacity: phase === 'filling' || phase === 'fading' ? 1 : 0,
@@ -328,14 +328,14 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
             {/* 副文字 - 描边层 */}
             <text
               x="50%"
-              y="190"
+              y="210"
               textAnchor="middle"
               dominantBaseline="middle"
               className={phase === 'drawing' ? 'stroke-animate-sub' : ''}
               style={{
                 fontFamily: getTimeFont(),
                 fontSize: `${subFontSize}px`,
-                fontWeight: 300,
+                fontWeight: 600,
                 letterSpacing: '0.15em',
                 fill: 'transparent',
                 stroke: '#ffffff',
@@ -350,14 +350,14 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
             {/* 副文字 - 填充层 */}
             <text
               x="50%"
-              y="190"
+              y="210"
               textAnchor="middle"
               dominantBaseline="middle"
               className={phase === 'filling' ? 'fill-animate' : ''}
               style={{
                 fontFamily: getTimeFont(),
                 fontSize: `${subFontSize}px`,
-                fontWeight: 300,
+                fontWeight: 600,
                 letterSpacing: '0.15em',
                 fill: 'url(#textGradient)',
                 fillOpacity: phase === 'filling' || phase === 'fading' ? 1 : 0,
@@ -374,9 +374,9 @@ export default function IntroAnimation({ onComplete, language, utcOffset, use24H
         {!isEnglish && (
           <line
             x1="100"
-            y1="175"
-            x2="320"
-            y2="175"
+            y1="195"
+            x2="380"
+            y2="195"
             className={phase === 'filling' ? 'line-animate' : ''}
             style={{
               stroke: '#ffffff',
