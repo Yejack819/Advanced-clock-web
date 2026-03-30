@@ -39,7 +39,38 @@ export default function AlarmCountdownPanel() {
   // 闹钟编辑状态
   const [editingAlarmId, setEditingAlarmId] = useState<string | null>(null);
   const [editAlarmTime, setEditAlarmTime] = useState('08:00');
+  const [editAlarmPeriod, setEditAlarmPeriod] = useState<'AM' | 'PM'>('AM');
   const [editAlarmLabel, setEditAlarmLabel] = useState('');
+
+  // 24h时间字符串 → 12h显示
+  const formatAlarmTime12h = (time24: string, lang: 'zh' | 'en') => {
+    const [h, m] = time24.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    let h12 = h % 12;
+    if (h12 === 0) h12 = 12;
+    const mm = m.toString().padStart(2, '0');
+    if (lang === 'zh') {
+      return `${period === 'AM' ? '上午' : '下午'} ${h12}:${mm}`;
+    }
+    return `${h12}:${mm} ${period}`;
+  };
+
+  // 24h时间字符串 → { hour12, minute, period }
+  const parse24to12 = (time24: string) => {
+    const [h, m] = time24.split(':').map(Number);
+    const period = h >= 12 ? 'PM' : 'AM';
+    let h12 = h % 12;
+    if (h12 === 0) h12 = 12;
+    return { hour12, minute: m.toString().padStart(2, '0'), period: period as 'AM' | 'PM' };
+  };
+
+  // { hour12, minute, period } → 24h时间字符串
+  const parse12to24 = (h12: number, minute: string, period: 'AM' | 'PM') => {
+    let h24 = h12;
+    if (period === 'AM' && h12 === 12) h24 = 0;
+    else if (period === 'PM' && h12 !== 12) h24 = h12 + 12;
+    return `${h24.toString().padStart(2, '0')}:${minute}`;
+  };
   
   // 剩余时间刷新状态
   const [, setRefreshTick] = useState(0);
@@ -389,17 +420,81 @@ export default function AlarmCountdownPanel() {
                             }}
                             placeholder={settings.language === 'zh' ? '标签（可选）' : 'Label (optional)'}
                           />
-                          <input
-                            type="time"
-                            value={editAlarmTime}
-                            onChange={e => setEditAlarmTime(e.target.value)}
-                            className="rounded px-2 py-1.5 text-xs outline-none transition-colors"
-                            style={{
-                              background: styles.panel.inputBg,
-                              border: `1px solid ${styles.panel.inputBorder}`,
-                              color: styles.panel.textColor,
-                            }}
-                          />
+                          {settings.use24Hour ? (
+                            <input
+                              type="time"
+                              value={editAlarmTime}
+                              onChange={e => setEditAlarmTime(e.target.value)}
+                              className="rounded px-2 py-1.5 text-xs outline-none transition-colors"
+                              style={{
+                                background: styles.panel.inputBg,
+                                border: `1px solid ${styles.panel.inputBorder}`,
+                                color: styles.panel.textColor,
+                              }}
+                            />
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                min="1"
+                                max="12"
+                                value={parse24to12(editAlarmTime).hour12}
+                                onChange={e => {
+                                  const val = Math.max(1, Math.min(12, Number(e.target.value)));
+                                  setEditAlarmTime(parse12to24(val, parse24to12(editAlarmTime).minute, editAlarmPeriod));
+                                }}
+                                className="w-12 rounded px-1.5 py-1.5 text-xs text-center font-mono outline-none transition-colors"
+                                style={{
+                                  background: styles.panel.inputBg,
+                                  border: `1px solid ${styles.panel.inputBorder}`,
+                                  color: styles.panel.textColor,
+                                }}
+                              />
+                              <span className="text-xs" style={{ color: styles.panel.textColor }}>:</span>
+                              <input
+                                type="number"
+                                min="0"
+                                max="59"
+                                value={parse24to12(editAlarmTime).minute}
+                                onChange={e => {
+                                  const val = Math.max(0, Math.min(59, Number(e.target.value)));
+                                  setEditAlarmTime(parse12to24(parse24to12(editAlarmTime).hour12, val.toString().padStart(2, '0'), editAlarmPeriod));
+                                }}
+                                className="w-12 rounded px-1.5 py-1.5 text-xs text-center font-mono outline-none transition-colors"
+                                style={{
+                                  background: styles.panel.inputBg,
+                                  border: `1px solid ${styles.panel.inputBorder}`,
+                                  color: styles.panel.textColor,
+                                }}
+                              />
+                              <div className="flex gap-0.5 ml-0.5">
+                                <button
+                                  onClick={() => {
+                                    setEditAlarmPeriod('AM');
+                                    setEditAlarmTime(parse12to24(parse24to12(editAlarmTime).hour12, parse24to12(editAlarmTime).minute, 'AM'));
+                                  }}
+                                  className="px-1.5 py-1 rounded text-xs transition-all"
+                                  style={{
+                                    background: editAlarmPeriod === 'AM' ? 'rgba(59,130,246,0.2)' : styles.panel.inputBg,
+                                    border: `1px solid ${editAlarmPeriod === 'AM' ? 'rgba(59,130,246,0.4)' : styles.panel.inputBorder}`,
+                                    color: editAlarmPeriod === 'AM' ? '#60a5fa' : styles.panel.labelColor,
+                                  }}
+                                >AM</button>
+                                <button
+                                  onClick={() => {
+                                    setEditAlarmPeriod('PM');
+                                    setEditAlarmTime(parse12to24(parse24to12(editAlarmTime).hour12, parse24to12(editAlarmTime).minute, 'PM'));
+                                  }}
+                                  className="px-1.5 py-1 rounded text-xs transition-all"
+                                  style={{
+                                    background: editAlarmPeriod === 'PM' ? 'rgba(59,130,246,0.2)' : styles.panel.inputBg,
+                                    border: `1px solid ${editAlarmPeriod === 'PM' ? 'rgba(59,130,246,0.4)' : styles.panel.inputBorder}`,
+                                    color: editAlarmPeriod === 'PM' ? '#60a5fa' : styles.panel.labelColor,
+                                  }}
+                                >PM</button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                         <div className="flex gap-2">
                           <button
@@ -450,7 +545,7 @@ export default function AlarmCountdownPanel() {
                           </button>
                           <div>
                             <div className="text-lg font-mono font-medium" style={{ color: alarm.enabled ? styles.panel.textColor : styles.panel.labelColor }}>
-                              {alarm.time}
+                              {settings.use24Hour ? alarm.time : formatAlarmTime12h(alarm.time, settings.language)}
                             </div>
                             <div className="flex items-center gap-2">
                               {alarm.label && (
@@ -471,6 +566,10 @@ export default function AlarmCountdownPanel() {
                             onClick={() => {
                               setEditingAlarmId(alarm.id);
                               setEditAlarmTime(alarm.time);
+                              if (!settings.use24Hour) {
+                                const parsed = parse24to12(alarm.time);
+                                setEditAlarmPeriod(parsed.period);
+                              }
                               setEditAlarmLabel(alarm.label);
                             }}
                             className="p-1.5 rounded transition-all hover:opacity-70"
@@ -595,7 +694,7 @@ export default function AlarmCountdownPanel() {
                           className="flex-1 text-left text-sm transition-all active:scale-95"
                           style={{ color: styles.panel.textColor }}
                         >
-                          <span className="font-mono font-medium">{item.time}</span>
+                          <span className="font-mono font-medium">{settings.use24Hour ? item.time : formatAlarmTime12h(item.time, settings.language)}</span>
                           <span className="text-xs ml-2" style={{ color: styles.panel.labelColor }}>
                             (x{item.usageCount})
                           </span>
