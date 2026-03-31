@@ -15,7 +15,7 @@ import { t } from '@/lib/i18n';
 import { X, Bell, Timer, Play, Pause, RotateCcw, Volume2, Clock, Trash2, BellRing, BellOff, Plus, Check, Pencil } from 'lucide-react';
 import { SOUND_OPTIONS, playSound } from '@/lib/soundManager';
 import { getCountdownHistory, addCountdownHistory, removeCountdownHistory, formatCountdownDuration, getMostFrequentCountdown } from '@/lib/countdownHistory';
-import { getAlarmHistory, removeAlarmHistory, getMostFrequentAlarm } from '@/lib/alarmHistory';
+import { getAlarmHistory, addAlarmHistory, removeAlarmHistory, getMostFrequentAlarm } from '@/lib/alarmHistory';
 import {
   isNotificationSupported,
   getNotificationPermission,
@@ -503,6 +503,8 @@ export default function AlarmCountdownPanel() {
                                 a.id === alarm.id ? { ...a, time: editAlarmTime, label: editAlarmLabel } : a
                               );
                               updateSettings({ alarms: newAlarms });
+                              addAlarmHistory(editAlarmTime);
+                              setAlarmHistory(getAlarmHistory());
                               setEditingAlarmId(null);
                             }}
                             className="flex-1 flex items-center justify-center gap-1 px-2 py-1.5 rounded text-xs font-medium"
@@ -603,6 +605,8 @@ export default function AlarmCountdownPanel() {
                   const defaultTime = mostFrequent?.time || '08:00';
                   const newAlarms = [...settings.alarms, { id: newId, time: defaultTime, enabled: true, label: '' }];
                   updateSettings({ alarms: newAlarms });
+                  addAlarmHistory(defaultTime);
+                  setAlarmHistory(getAlarmHistory());
                   setEditingAlarmId(newId);
                   setEditAlarmTime(defaultTime);
                   setEditAlarmLabel('');
